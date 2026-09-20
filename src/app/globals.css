@@ -32,6 +32,29 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+/*
+ * 커스텀 커서. 마우스를 실제로 사용하는 환경(pointer: fine)에서만 적용하고,
+ * 터치/모바일에는 영향을 주지 않는다. 이미지가 로드되지 않으면 브라우저가
+ * 자동으로 콤마 뒤의 기본 cursor 값(auto / pointer)으로 대체한다.
+ */
+@media (pointer: fine) {
+  body {
+    cursor: url("/images/cursor/wony-cursor.png") 4 4, auto;
+  }
+
+  a,
+  button,
+  label,
+  select,
+  [role="button"],
+  [type="submit"],
+  [type="button"],
+  [type="checkbox"],
+  .cursor-pointer {
+    cursor: url("/images/cursor/wony-pointer.png") 6 6, pointer;
+  }
+}
+
 @keyframes star-twinkle {
   0%,
   100% {
