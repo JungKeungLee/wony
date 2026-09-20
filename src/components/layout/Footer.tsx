@@ -58,21 +58,27 @@ export default function Footer() {
         </span>
       </div>
 
-      <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-10 px-6 py-16 text-center sm:py-20">
-        <div className="flex flex-col items-center gap-2">
-          <p className="font-display text-2xl tracking-[0.15em] text-text">WONY</p>
-          <p className="font-display text-xs tracking-[0.35em] text-text-soft">
+      <div className="relative mx-auto flex max-w-xl flex-col items-center gap-2 px-6 py-5 text-center">
+        {/* 1~2. 브랜드 */}
+        <div className="flex flex-col items-center gap-1">
+          <p className="font-display text-xl tracking-[0.15em] text-text">WONY</p>
+          <p className="font-display text-[11px] tracking-[0.3em] text-text-soft">
             OUR MEMORIES OF 2026
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs tracking-[0.2em]">
+        {/* 3. 관련 링크 */}
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs tracking-[0.2em]">
           {FOOTER_SOCIAL_LINKS.map((link) => (
             <FooterLinkItem key={link.label} link={link} />
           ))}
         </div>
 
-        <div className="flex max-w-xl flex-col gap-2 text-xs leading-relaxed text-text-soft/70">
+        {/* 4. divider */}
+        <span aria-hidden className="h-px w-10 bg-white/10" />
+
+        {/* 5. 안내 문구 */}
+        <div className="flex flex-col gap-1 text-[11px] leading-snug text-text-soft/70">
           <p>
             본 사이트는 팬들이 만든 비영리 팬 프로젝트이며, WONY의 공식
             웹사이트가 아닙니다.
@@ -83,26 +89,29 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* 6. 문의 이메일 */}
         <div className="flex flex-col items-center gap-1 text-xs text-text-soft">
           <span className="tracking-[0.15em]">콘텐츠 삭제 또는 수정 요청</span>
           <FooterLinkItem link={{ label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` }} />
         </div>
 
-        <div className="font-serif-kr flex flex-col items-center gap-1 text-sm text-pink/90">
+        {/* 7. 약관 링크 */}
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[10px] tracking-[0.1em] text-text-soft/60">
+          {FOOTER_LEGAL_LINKS.map((link) => (
+            <FooterLinkItem key={link.label} link={link} />
+          ))}
+        </div>
+
+        {/* 8~9. 감성 문구 */}
+        <div className="font-serif-kr flex flex-col items-center gap-0.5 text-sm text-pink/90">
           <p>Made with ♥ for WONY</p>
           <p>See you in 2027 ✦</p>
         </div>
 
-        <div className="flex flex-col items-center gap-4 pt-4">
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] tracking-[0.1em] text-text-soft/60">
-            {FOOTER_LEGAL_LINKS.map((link) => (
-              <FooterLinkItem key={link.label} link={link} />
-            ))}
-          </div>
-          <p className="text-[11px] tracking-[0.1em] text-text-soft/50">
-            © 2026 WONY FAN PROJECT
-          </p>
-        </div>
+        {/* 10. Copyright */}
+        <p className="text-[10px] tracking-[0.1em] text-text-soft/50">
+          © 2026 WONY FAN PROJECT
+        </p>
       </div>
     </motion.footer>
   );
