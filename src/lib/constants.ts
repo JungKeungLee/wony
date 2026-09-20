@@ -3,6 +3,7 @@ import type { FooterLink, NavItem, PreviewItem } from "./types";
 export const NAV_ITEMS: NavItem[] = [
   { label: "HOME", href: "/" },
   { label: "TIMELINE", href: "/timeline" },
+  { label: "STATISTICS", href: "/statistics" },
   { label: "LETTER", href: "/letters" },
   { label: "FAN ART", href: "/fan-art" },
   { label: "VIDEO", href: "/videos" },

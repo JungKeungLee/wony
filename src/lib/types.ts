@@ -85,3 +85,55 @@ export interface FooterLink {
   label: string;
   href: string | null;
 }
+
+/** STATISTICS 페이지의 큰 숫자 카드 (Count Up 애니메이션 대상) */
+export interface HighlightStat {
+  /** Count Up 목표 숫자 */
+  value: number;
+  /** 숫자 뒤에 붙는 단위, 예: "h" */
+  suffix?: string;
+  /** 소수점 자리수 (기본 0) */
+  decimals?: number;
+  /** 카드 상단 영문 라벨, 예: "BROADCASTS" */
+  label: string;
+  /** 짧은 한글 설명 */
+  description: string;
+  /** true면 더 크게 강조해서 보여준다 */
+  featured?: boolean;
+}
+
+/** 숫자가 아닌 기록/에피소드성 항목 (가장 오래 방송한 날 등) */
+export interface RecordStat {
+  title: string;
+  value: string;
+  description?: string;
+}
+
+export interface TopContentItem {
+  rank: number;
+  name: string;
+  detail: string;
+}
+
+export interface QuoteOfTheYearData {
+  quote: string;
+  date: string;
+  description: string;
+}
+
+export interface MonthlyStat {
+  /** 1~12 */
+  month: number;
+  broadcasts: number;
+  hours: number;
+}
+
+/** STATISTICS 페이지 전체 데이터. src/data/statistics.ts에서 채운다. */
+export interface StatisticsData {
+  highlights: HighlightStat[];
+  records: RecordStat[];
+  topContents: TopContentItem[];
+  topGames: TopContentItem[];
+  quoteOfTheYear: QuoteOfTheYearData;
+  monthly: MonthlyStat[];
+}
