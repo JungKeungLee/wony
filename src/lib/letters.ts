@@ -1,11 +1,13 @@
-import { isSupabaseConfigured, supabase } from "./supabase";
+import { getMissingSupabaseEnvVars, isSupabaseConfigured, supabase } from "./supabase";
 import type { Letter, LetterInput } from "./types";
 
 const LETTER_COLUMNS = "id,nickname,content,message_2027,is_anonymous,created_at";
 
 export class SupabaseNotConfiguredError extends Error {
   constructor() {
-    super("Supabase가 아직 설정되지 않았습니다.");
+    const missing = getMissingSupabaseEnvVars();
+    const detail = missing.length > 0 ? ` (누락: ${missing.join(", ")})` : "";
+    super(`Supabase가 아직 설정되지 않았습니다.${detail}`);
     this.name = "SupabaseNotConfiguredError";
   }
 }

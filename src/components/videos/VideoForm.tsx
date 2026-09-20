@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { submitVideo } from "@/lib/videos";
 import { toErrorMessage } from "@/lib/letters";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { getMissingSupabaseEnvVars, isSupabaseConfigured } from "@/lib/supabase";
 import { getPlatformLabel, parseVideoUrl } from "@/lib/videoPlatform";
 import type { VideoPlatform } from "@/lib/types";
 
@@ -112,6 +112,9 @@ export default function VideoForm() {
         <p className="border border-pink/30 bg-bg-soft px-4 py-3 text-xs text-pink/90">
           Supabase가 아직 연결되지 않아 영상을 등록할 수 없습니다. 관리자에게
           문의해주세요.
+          <span className="block text-text-soft/60">
+            누락된 환경변수: {getMissingSupabaseEnvVars().join(", ")}
+          </span>
         </p>
       )}
 

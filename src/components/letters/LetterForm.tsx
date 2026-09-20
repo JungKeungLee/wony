@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { submitLetter, toErrorMessage } from "@/lib/letters";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { getMissingSupabaseEnvVars, isSupabaseConfigured } from "@/lib/supabase";
 
 const MAX_NICKNAME = 30;
 const MAX_CONTENT = 2000;
@@ -99,6 +99,9 @@ export default function LetterForm() {
         <p className="border border-pink/30 bg-bg-soft px-4 py-3 text-xs text-pink/90">
           Supabase가 아직 연결되지 않아 편지를 등록할 수 없습니다. 관리자에게
           문의해주세요.
+          <span className="block text-text-soft/60">
+            누락된 환경변수: {getMissingSupabaseEnvVars().join(", ")}
+          </span>
         </p>
       )}
 
