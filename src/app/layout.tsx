@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR, Nanum_Myeongjo, Playfair_Display } from "next/font/google";
 import { MusicProvider } from "@/context/MusicContext";
 import StarField from "@/components/effects/StarField";
+import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <MusicProvider>
           <StarField />
           {children}
+          <Footer />
         </MusicProvider>
       </body>
     </html>
