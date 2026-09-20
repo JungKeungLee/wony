@@ -435,8 +435,9 @@ export const archiveData: ArchiveMonth[] = [
       {
         id: "2026-08-12",
         date: "08.12",
-        title: "수장님 vs 크루원 벽킬내기",
-        tags: ["합방"],
+        title: "배그 2회차",
+        description: "수장님들 리벤지 매치",
+        tags: ["배그", "2회차", "리벤지"],
       },
       {
         id: "2026-08-12-2",
