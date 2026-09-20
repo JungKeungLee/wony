@@ -13,6 +13,7 @@ import { getCategoryLabel } from "@/lib/videoCategory";
 import { deleteVideo } from "@/lib/videos";
 import type { VideoItem } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useMusic } from "@/context/MusicContext";
 
 interface VideoModalProps {
   videos: VideoItem[];
@@ -75,10 +76,23 @@ function VideoFrame({ video }: { video: VideoItem }) {
 
 export default function VideoModal({ videos, index, onClose, onNavigate, onDeleted }: VideoModalProps) {
   const video = index !== null ? videos[index] : null;
+  const isOpen = video !== null;
 
+  const { pauseForOverlay, resumeForOverlay } = useMusic();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // 영상 재생 중에는 BGM을 잠시 멈추고, Modal을 닫으면 (사용자가 그 사이 직접 MUSIC OFF를
+  // 누르지 않은 이상) 원래대로 되돌린다. prev/next로 다른 영상으로 넘어갈 때는 계속 열려
+  // 있는 상태라 다시 실행되지 않는다.
+  useEffect(() => {
+    if (!isOpen) return;
+    pauseForOverlay();
+    return () => {
+      resumeForOverlay();
+    };
+  }, [isOpen, pauseForOverlay, resumeForOverlay]);
 
   function closeModal() {
     setConfirmOpen(false);
