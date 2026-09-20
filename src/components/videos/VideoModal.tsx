@@ -102,6 +102,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
       setIsDeleting(false);
       onDeleted(video.id);
     } catch {
+      setConfirmOpen(false);
       setIsDeleting(false);
       setDeleteError("영상을 삭제하지 못했습니다.");
     }

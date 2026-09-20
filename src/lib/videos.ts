@@ -30,10 +30,17 @@ export async function submitVideo(input: VideoInput): Promise<void> {
   if (error) throw error;
 }
 
-/** 영상을 삭제한다. 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다. */
+/**
+ * 영상을 삭제한다. 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다.
+ * RLS 정책에 막혀 0개 행이 삭제된 경우 Supabase는 에러 없이 빈 결과를 반환하므로,
+ * 삭제된 행이 실제로 있는지 select("id")로 직접 확인해 "성공처럼 보이는 실패"를 막는다.
+ */
 export async function deleteVideo(id: string): Promise<void> {
   if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
 
-  const { error } = await supabase.from("videos").delete().eq("id", id);
+  const { data, error } = await supabase.from("videos").delete().eq("id", id).select("id");
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error("삭제되지 않았습니다.");
+  }
 }
