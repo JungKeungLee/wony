@@ -10,13 +10,16 @@ import {
   getWatchButtonLabel,
 } from "@/lib/videoPlatform";
 import { getCategoryLabel } from "@/lib/videoCategory";
+import { deleteVideo } from "@/lib/videos";
 import type { VideoItem } from "@/lib/types";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface VideoModalProps {
   videos: VideoItem[];
   index: number | null;
   onClose: () => void;
   onNavigate: (index: number) => void;
+  onDeleted: (id: string) => void;
 }
 
 function formatDate(iso: string): string {
@@ -70,8 +73,39 @@ function VideoFrame({ video }: { video: VideoItem }) {
   );
 }
 
-export default function VideoModal({ videos, index, onClose, onNavigate }: VideoModalProps) {
+export default function VideoModal({ videos, index, onClose, onNavigate, onDeleted }: VideoModalProps) {
   const video = index !== null ? videos[index] : null;
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  function closeModal() {
+    setConfirmOpen(false);
+    setDeleteError("");
+    onClose();
+  }
+
+  function navigate(nextIndex: number) {
+    setConfirmOpen(false);
+    setDeleteError("");
+    onNavigate(nextIndex);
+  }
+
+  async function handleConfirmDelete() {
+    if (!video) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteVideo(video.id);
+      setConfirmOpen(false);
+      setIsDeleting(false);
+      onDeleted(video.id);
+    } catch {
+      setIsDeleting(false);
+      setDeleteError("영상을 삭제하지 못했습니다.");
+    }
+  }
 
   useEffect(() => {
     if (video === null) return;
@@ -81,9 +115,9 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
 
     function handleKeyDown(e: KeyboardEvent) {
       if (index === null) return;
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") onNavigate((index - 1 + videos.length) % videos.length);
-      if (e.key === "ArrowRight") onNavigate((index + 1) % videos.length);
+      if (e.key === "Escape") closeModal();
+      if (e.key === "ArrowLeft") navigate((index - 1 + videos.length) % videos.length);
+      if (e.key === "ArrowRight") navigate((index + 1) % videos.length);
     }
     window.addEventListener("keydown", handleKeyDown);
 
@@ -91,9 +125,11 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [video, index, videos.length, onClose, onNavigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video, index, videos.length]);
 
   return (
+    <>
     <AnimatePresence>
       {video && index !== null && (
         <motion.div
@@ -101,12 +137,12 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          onClick={onClose}
+          onClick={closeModal}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
         >
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeModal}
             aria-label="닫기"
             className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center text-2xl text-text/80 transition-colors hover:text-pink sm:right-6 sm:top-6"
           >
@@ -119,7 +155,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onNavigate((index - 1 + videos.length) % videos.length);
+                  navigate((index - 1 + videos.length) % videos.length);
                 }}
                 aria-label="이전 영상"
                 className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-3xl text-text/70 transition-colors hover:text-pink sm:left-6"
@@ -130,7 +166,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onNavigate((index + 1) % videos.length);
+                  navigate((index + 1) % videos.length);
                 }}
                 aria-label="다음 영상"
                 className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-3xl text-text/70 transition-colors hover:text-pink sm:right-6"
@@ -174,6 +210,18 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
                 </p>
               )}
               <p className="mt-4 text-xs text-text-soft/60">{formatDate(video.created_at)}</p>
+
+              {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
+
+              <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(true)}
+                  className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                >
+                  영상 삭제
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -185,5 +233,14 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
         </motion.div>
       )}
     </AnimatePresence>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      message="정말 이 영상을 삭제하시겠습니까?"
+      isProcessing={isDeleting}
+      onConfirm={handleConfirmDelete}
+      onCancel={() => setConfirmOpen(false)}
+    />
+    </>
   );
 }

@@ -9,6 +9,7 @@ import type { VideoItem } from "@/lib/types";
 import VideoCard from "./VideoCard";
 import VideoModal from "./VideoModal";
 import BestClipsSection from "./BestClipsSection";
+import StatusToast from "@/components/ui/StatusToast";
 
 type Status = "loading" | "success" | "error";
 
@@ -21,6 +22,13 @@ export default function VideoGrid() {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   /** null이면 ALL */
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  function handleVideoDeleted(id: string) {
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+    setActiveVideo(null);
+    setStatusMessage("영상이 삭제되었습니다.");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -187,7 +195,9 @@ export default function VideoGrid() {
         index={activeIndex}
         onClose={() => setActiveVideo(null)}
         onNavigate={(i) => setActiveVideo(modalList[i] ?? null)}
+        onDeleted={handleVideoDeleted}
       />
+      <StatusToast message={statusMessage} onDismiss={() => setStatusMessage(null)} />
     </>
   );
 }

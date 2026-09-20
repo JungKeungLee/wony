@@ -7,6 +7,7 @@ import { toErrorMessage } from "@/lib/letters";
 import type { FanArt } from "@/lib/types";
 import FanArtCard from "./FanArtCard";
 import FanArtModal from "./FanArtModal";
+import StatusToast from "@/components/ui/StatusToast";
 
 type Status = "loading" | "success" | "error";
 
@@ -15,6 +16,13 @@ export default function FanArtGallery() {
   const [arts, setArts] = useState<FanArt[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  function handleFanArtDeleted(id: string) {
+    setArts((prev) => prev.filter((a) => a.id !== id));
+    setActiveIndex(null);
+    setStatusMessage("팬아트가 삭제되었습니다.");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -92,7 +100,9 @@ export default function FanArtGallery() {
         index={activeIndex}
         onClose={() => setActiveIndex(null)}
         onNavigate={setActiveIndex}
+        onDeleted={handleFanArtDeleted}
       />
+      <StatusToast message={statusMessage} onDismiss={() => setStatusMessage(null)} />
     </>
   );
 }

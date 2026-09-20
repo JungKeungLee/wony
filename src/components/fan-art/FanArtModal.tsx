@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { getFanArtImageUrl } from "@/lib/fanArt";
+import { deleteFanArt, getFanArtImageUrl } from "@/lib/fanArt";
+import { toErrorMessage } from "@/lib/letters";
 import type { FanArt } from "@/lib/types";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface FanArtModalProps {
   arts: FanArt[];
   index: number | null;
   onClose: () => void;
   onNavigate: (index: number) => void;
+  onDeleted: (id: string) => void;
 }
 
 function ModalArtImage({ src, alt }: { src: string; alt: string }) {
@@ -44,8 +47,39 @@ function formatDate(iso: string): string {
   ).padStart(2, "0")}`;
 }
 
-export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArtModalProps) {
+export default function FanArtModal({ arts, index, onClose, onNavigate, onDeleted }: FanArtModalProps) {
   const art = index !== null ? arts[index] : null;
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  function closeModal() {
+    setConfirmOpen(false);
+    setDeleteError("");
+    onClose();
+  }
+
+  function navigate(nextIndex: number) {
+    setConfirmOpen(false);
+    setDeleteError("");
+    onNavigate(nextIndex);
+  }
+
+  async function handleConfirmDelete() {
+    if (!art) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteFanArt(art);
+      setConfirmOpen(false);
+      setIsDeleting(false);
+      onDeleted(art.id);
+    } catch (err) {
+      setIsDeleting(false);
+      setDeleteError(toErrorMessage(err, "팬아트를 삭제하지 못했습니다."));
+    }
+  }
 
   useEffect(() => {
     if (art === null) return;
@@ -55,9 +89,9 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
 
     function handleKeyDown(e: KeyboardEvent) {
       if (index === null) return;
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") onNavigate((index - 1 + arts.length) % arts.length);
-      if (e.key === "ArrowRight") onNavigate((index + 1) % arts.length);
+      if (e.key === "Escape") closeModal();
+      if (e.key === "ArrowLeft") navigate((index - 1 + arts.length) % arts.length);
+      if (e.key === "ArrowRight") navigate((index + 1) % arts.length);
     }
     window.addEventListener("keydown", handleKeyDown);
 
@@ -65,9 +99,11 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [art, index, arts.length, onClose, onNavigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [art, index, arts.length]);
 
   return (
+    <>
     <AnimatePresence>
       {art && index !== null && (
         <motion.div
@@ -75,12 +111,12 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
-          onClick={onClose}
+          onClick={closeModal}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
         >
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeModal}
             aria-label="닫기"
             className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center text-2xl text-text/80 transition-colors hover:text-pink sm:right-6 sm:top-6"
           >
@@ -93,7 +129,7 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onNavigate((index - 1 + arts.length) % arts.length);
+                  navigate((index - 1 + arts.length) % arts.length);
                 }}
                 aria-label="이전 작품"
                 className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-3xl text-text/70 transition-colors hover:text-pink sm:left-6"
@@ -104,7 +140,7 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onNavigate((index + 1) % arts.length);
+                  navigate((index + 1) % arts.length);
                 }}
                 aria-label="다음 작품"
                 className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-3xl text-text/70 transition-colors hover:text-pink sm:right-6"
@@ -141,6 +177,18 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
                 </p>
               )}
               <p className="mt-4 text-xs text-text-soft/60">{formatDate(art.created_at)}</p>
+
+              {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
+
+              <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(true)}
+                  className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                >
+                  팬아트 삭제
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -152,5 +200,14 @@ export default function FanArtModal({ arts, index, onClose, onNavigate }: FanArt
         </motion.div>
       )}
     </AnimatePresence>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      message="정말 이 팬아트를 삭제하시겠습니까?"
+      isProcessing={isDeleting}
+      onConfirm={handleConfirmDelete}
+      onCancel={() => setConfirmOpen(false)}
+    />
+    </>
   );
 }

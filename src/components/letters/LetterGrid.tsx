@@ -5,6 +5,7 @@ import { fetchApprovedLetters, toErrorMessage } from "@/lib/letters";
 import type { Letter } from "@/lib/types";
 import LetterCard from "./LetterCard";
 import LetterModal from "./LetterModal";
+import StatusToast from "@/components/ui/StatusToast";
 
 type Status = "loading" | "success" | "error";
 
@@ -13,6 +14,19 @@ export default function LetterGrid() {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeLetter, setActiveLetter] = useState<Letter | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  function handleLetterUpdated(updated: Letter) {
+    setLetters((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    setActiveLetter(updated);
+    setStatusMessage("편지가 수정되었습니다.");
+  }
+
+  function handleLetterDeleted(id: string) {
+    setLetters((prev) => prev.filter((l) => l.id !== id));
+    setActiveLetter(null);
+    setStatusMessage("편지가 삭제되었습니다.");
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -79,7 +93,13 @@ export default function LetterGrid() {
         ))}
       </div>
 
-      <LetterModal letter={activeLetter} onClose={() => setActiveLetter(null)} />
+      <LetterModal
+        letter={activeLetter}
+        onClose={() => setActiveLetter(null)}
+        onUpdated={handleLetterUpdated}
+        onDeleted={handleLetterDeleted}
+      />
+      <StatusToast message={statusMessage} onDismiss={() => setStatusMessage(null)} />
     </>
   );
 }

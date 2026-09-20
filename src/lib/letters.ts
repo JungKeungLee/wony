@@ -54,3 +54,19 @@ export async function submitLetter(input: LetterInput): Promise<void> {
   const { error } = await supabase.from("letters").insert([{ ...input, is_approved: true }]);
   if (error) throw error;
 }
+
+/** 편지 내용을 수정한다. 로그인이 없는 사이트라 누구나 수정할 수 있다는 전제로 동작한다. */
+export async function updateLetter(id: string, input: LetterInput): Promise<void> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { error } = await supabase.from("letters").update(input).eq("id", id);
+  if (error) throw error;
+}
+
+/** 편지를 삭제한다. 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다. */
+export async function deleteLetter(id: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { error } = await supabase.from("letters").delete().eq("id", id);
+  if (error) throw error;
+}

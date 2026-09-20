@@ -29,3 +29,11 @@ export async function submitVideo(input: VideoInput): Promise<void> {
   const { error } = await supabase.from("videos").insert([{ ...input, is_approved: true }]);
   if (error) throw error;
 }
+
+/** 영상을 삭제한다. 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다. */
+export async function deleteVideo(id: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { error } = await supabase.from("videos").delete().eq("id", id);
+  if (error) throw error;
+}

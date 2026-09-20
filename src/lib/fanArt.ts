@@ -73,3 +73,27 @@ export async function uploadFanArt(input: UploadFanArtInput): Promise<void> {
     throw insertError;
   }
 }
+
+/**
+ * 팬아트를 삭제한다. Storage의 실제 이미지를 먼저 지우고 그다음 DB row를 지워서,
+ * 만에 하나 중간에 실패해도 "이미지는 남았는데 목록에 없는" 상태보다
+ * "row는 남았는데 이미지가 없는(깨진 썸네일)" 상태를 피한다.
+ * 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다.
+ */
+export async function deleteFanArt(art: Pick<FanArt, "id" | "image_path">): Promise<void> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { error: storageError } = await supabase.storage
+    .from(FAN_ART_BUCKET)
+    .remove([art.image_path]);
+  if (storageError) {
+    throw new Error("이미지를 삭제하지 못했습니다. 잠시 후 다시 시도해주세요.");
+  }
+
+  const { error: deleteError } = await supabase.from("fan_arts").delete().eq("id", art.id);
+  if (deleteError) {
+    throw new Error(
+      "이미지는 삭제됐지만 목록 정리에 실패했습니다. 잠시 후 다시 시도해주세요."
+    );
+  }
+}
