@@ -45,12 +45,15 @@ export default function ArchivePhotoSlot({
   }
 
   return (
-    <div className="flex sm:w-[200px] sm:justify-end md:w-[220px]">
+    // 이미지가 등록됐을 때와 동일한 aspect-video 크기를 미리 확보해서, 등록 전/후로
+    // 이 자리의 높이가 갑자기 바뀌어 아래 콘텐츠가 밀리는 Layout Shift를 막는다.
+    // 박스 자체는 테두리/배경 없이 비워두어 크게 눈에 띄는 Placeholder처럼 보이지 않게 한다.
+    <div className="relative aspect-video w-full sm:w-[200px] md:w-[220px]">
       <button
         type="button"
         onClick={onAddPhoto}
         disabled={isUploading}
-        className="text-xs tracking-[0.1em] text-text-soft/70 underline underline-offset-4 transition-colors hover:text-pink disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex h-full w-full items-center justify-center text-xs tracking-[0.1em] text-text-soft/70 underline underline-offset-4 transition-colors hover:text-pink disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isUploading ? "등록하는 중..." : "[ 사진 추가 ]"}
       </button>

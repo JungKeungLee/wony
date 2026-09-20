@@ -119,12 +119,14 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
 
   return (
     <>
+      {/* display:none 대신 sr-only를 써서, OS 파일 선택창이 닫힌 뒤 브라우저가 포커스를
+          이 input으로 되돌리려다 실패해 다른 곳으로 튀는 것을 방지한다. */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
-        className="hidden"
+        className="sr-only"
       />
 
       {months.map((monthData) => (
