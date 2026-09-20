@@ -419,6 +419,13 @@ export const archiveData: ArchiveMonth[] = [
         tags: ["컨텐츠"],
       },
       {
+        id: "2026-07-25-smoora",
+        date: "07.25",
+        title: "스모오라",
+        description: "",
+        tags: ["컨텐츠"],
+      },
+      {
         id: "2026-07-13-08-10",
         date: "07.13 ~ 08.10",
         title: "삼국지",
