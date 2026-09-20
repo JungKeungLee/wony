@@ -68,9 +68,9 @@ export const BGM_SRC: string | null = null;
  * 실제 주소가 정해지면 이 값만 채우면 된다.
  */
 export const FOOTER_SOCIAL_LINKS: FooterLink[] = [
-  { label: "FAN CAFE", href: null },
-  { label: "SOOP", href: null },
-  { label: "YOUTUBE", href: null },
+  { label: "FAN CAFE", href: "https://cafe.naver.com/nanwony" },
+  { label: "SOOP", href: "https://www.sooplive.com/station/whiteone325" },
+  { label: "YOUTUBE", href: "https://www.youtube.com/channel/UCrwytjkxPAjHKdM8h6kYQ8Q" },
 ];
 
 /**
@@ -83,4 +83,4 @@ export const FOOTER_LEGAL_LINKS: FooterLink[] = [
 ];
 
 /** 콘텐츠 삭제/수정 요청 등 문의를 받는 이메일. 나중에 이 값만 바꾸면 된다. */
-export const CONTACT_EMAIL = "contact@example.com";
+export const CONTACT_EMAIL = "ahsjdkfl1042@gmail.com";
