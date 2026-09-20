@@ -59,12 +59,14 @@ export const HERO_BACKGROUND_IMAGE: string | null = "/images/hero/main.png";
 export const HERO_IMAGE_FOCAL_POINT = "center";
 
 /**
- * 배경음악 파일 경로. 실제 음원이 없으면 null로 두면 되고,
- * 그 경우 MusicProvider는 UI 상태만 토글한다.
+ * 페이지별 배경음악 경로.
+ * - DEFAULT_BGM_SRC: 일반 페이지(HOME/TIMELINE/ARCHIVE/STATISTICS/LETTER/FAN ART/VIDEO)
+ * - SURPRISE_BGM_SRC: /surprise 전용
  */
-export const BGM_SRC: string | null = "/audio/decembers-quiet-turning.mp3";
+export const DEFAULT_BGM_SRC = "/audio/Before_the_Snow_Melts.mp3";
+export const SURPRISE_BGM_SRC = "/audio/decembers-quiet-turning.mp3";
 
-/** 배경음악 기본 볼륨 (0~1). 사용자가 직접 조절하면 localStorage에 저장되어 이 값을 덮어쓴다. */
+/** 배경음악 기본 볼륨 (0~1). 두 트랙 모두 동일하게 적용된다. 사용자가 직접 조절하면 localStorage에 저장되어 이 값을 덮어쓴다. */
 export const DEFAULT_BGM_VOLUME = 0.18;
 
 /**
