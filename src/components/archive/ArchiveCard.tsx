@@ -1,9 +1,25 @@
 import type { ArchiveItem } from "@/data/archive";
+import type { ArchiveImage } from "@/lib/types";
+import ArchivePhotoSlot from "./ArchivePhotoSlot";
 
-export default function ArchiveCard({ item }: { item: ArchiveItem }) {
+interface ArchiveCardProps {
+  item: ArchiveItem;
+  image: ArchiveImage | undefined;
+  isUploading: boolean;
+  onAddPhoto: () => void;
+  onOpenPhoto: () => void;
+}
+
+export default function ArchiveCard({
+  item,
+  image,
+  isUploading,
+  onAddPhoto,
+  onOpenPhoto,
+}: ArchiveCardProps) {
   return (
-    <div className="flex flex-col gap-2 border-b border-white/10 py-5 sm:flex-row sm:gap-8 sm:py-6">
-      <div className="flex shrink-0 flex-col gap-1 sm:w-44">
+    <div className="flex flex-col gap-3 border-b border-white/10 py-5 sm:flex-row sm:items-start sm:gap-6 sm:py-6">
+      <div className="order-1 flex shrink-0 flex-col gap-1 sm:w-40 md:w-44">
         <span className="font-display text-sm tracking-[0.1em] text-star sm:text-base">
           {item.date}
         </span>
@@ -14,7 +30,17 @@ export default function ArchiveCard({ item }: { item: ArchiveItem }) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="order-2 shrink-0 sm:order-3">
+        <ArchivePhotoSlot
+          image={image}
+          alt={`${item.title} 대표 이미지`}
+          isUploading={isUploading}
+          onAddPhoto={onAddPhoto}
+          onOpenPhoto={onOpenPhoto}
+        />
+      </div>
+
+      <div className="order-3 flex flex-1 flex-col gap-2 sm:order-2">
         <h3 className="font-serif-kr text-lg text-text sm:text-xl">{item.title}</h3>
         {item.description && (
           <p className="text-sm text-text-soft sm:text-base">{item.description}</p>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Navigation from "@/components/layout/Navigation";
 import ArchiveHero from "@/components/archive/ArchiveHero";
 import MonthNav from "@/components/archive/MonthNav";
-import ArchiveMonthSection from "@/components/archive/ArchiveMonthSection";
+import ArchiveContent from "@/components/archive/ArchiveContent";
 import { archiveData, archiveNotice, type ArchiveMonth } from "@/data/archive";
 
 export const metadata: Metadata = {
@@ -39,10 +39,7 @@ export default function ArchivePage() {
       <main>
         <ArchiveHero />
         <MonthNav />
-
-        {FULL_YEAR.map((monthData) => (
-          <ArchiveMonthSection key={monthData.month} {...monthData} />
-        ))}
+        <ArchiveContent months={FULL_YEAR} />
 
         <p className="mx-auto max-w-3xl px-6 pb-24 pt-4 text-center text-xs leading-relaxed text-text-soft/60">
           {archiveNotice}

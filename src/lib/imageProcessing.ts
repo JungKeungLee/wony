@@ -52,3 +52,49 @@ export async function prepareImageForUpload(
     return { blob: file, extension: extensionFromMimeType(file.type) };
   }
 }
+
+const THUMBNAIL_WIDTH = 640;
+const THUMBNAIL_HEIGHT = 360; // 16:9
+const THUMBNAIL_QUALITY = 0.78;
+
+/**
+ * Archive 대표 이미지처럼 작은 16:9 썸네일이 필요한 곳에서 쓴다.
+ * 원본 비율이 16:9가 아니어도 찌그러뜨리지 않도록 중앙 기준으로 crop(cover)한 뒤
+ * 640x360 WebP로 인코딩한다. prepareImageForUpload와 달리 항상 이 크기/비율/포맷을
+ * 강제해야 하므로 캔버스 인코딩 실패 시 원본으로 폴백하지 않고 에러를 던진다.
+ */
+export async function prepareThumbnailForUpload(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+
+  const targetRatio = THUMBNAIL_WIDTH / THUMBNAIL_HEIGHT;
+  const sourceRatio = bitmap.width / bitmap.height;
+
+  let sx = 0;
+  let sy = 0;
+  let sWidth = bitmap.width;
+  let sHeight = bitmap.height;
+
+  if (sourceRatio > targetRatio) {
+    // 원본이 더 넓다 -> 좌우를 잘라 세로 높이에 맞춘다.
+    sWidth = bitmap.height * targetRatio;
+    sx = (bitmap.width - sWidth) / 2;
+  } else if (sourceRatio < targetRatio) {
+    // 원본이 더 좁다(세로가 길다) -> 위아래를 잘라 가로 너비에 맞춘다.
+    sHeight = bitmap.width / targetRatio;
+    sy = (bitmap.height - sHeight) / 2;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = THUMBNAIL_WIDTH;
+  canvas.height = THUMBNAIL_HEIGHT;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas 2d context를 만들 수 없습니다.");
+  ctx.drawImage(bitmap, sx, sy, sWidth, sHeight, 0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/webp", THUMBNAIL_QUALITY)
+  );
+  if (!blob) throw new Error("webp 인코딩에 실패했습니다.");
+
+  return blob;
+}

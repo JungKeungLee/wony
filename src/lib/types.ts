@@ -88,6 +88,16 @@ export type VideoInput = Pick<
   "nickname" | "title" | "platform" | "video_url" | "video_id" | "message" | "month" | "category"
 >;
 
+/** Supabase archive_images 테이블 한 행. src/data/archive.ts의 ArchiveItem.id와 archive_id로 연결된다. */
+export interface ArchiveImage {
+  id: string;
+  archive_id: string;
+  /** Storage 객체 경로. 공개 URL은 getArchiveImageUrl()로 계산한다. */
+  image_path: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Footer 등에서 쓰는 링크. href가 없으면(null) 클릭 불가능한 placeholder로 표시한다. */
 export interface FooterLink {
   label: string;
