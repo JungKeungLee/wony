@@ -1,4 +1,4 @@
-import type { NavItem, PreviewItem } from "./types";
+import type { FooterLink, NavItem, PreviewItem } from "./types";
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "HOME", href: "/" },
@@ -6,7 +6,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "LETTER", href: "/letters" },
   { label: "FAN ART", href: "/fan-art" },
   { label: "VIDEO", href: "/videos" },
-  { label: "MEMORY", href: "/memories" },
 ];
 
 export const INTRO_LINES: string[] = [
@@ -62,3 +61,26 @@ export const HERO_IMAGE_FOCAL_POINT = "center";
  * MusicProvider는 UI 상태만 토글한다.
  */
 export const BGM_SRC: string | null = null;
+
+/**
+ * Footer에 노출할 공식/관련 채널 링크.
+ * href가 아직 없으면 null로 두고, Footer는 이를 클릭 불가능한 placeholder로 표시한다.
+ * 실제 주소가 정해지면 이 값만 채우면 된다.
+ */
+export const FOOTER_SOCIAL_LINKS: FooterLink[] = [
+  { label: "FAN CAFE", href: null },
+  { label: "SOOP", href: null },
+  { label: "YOUTUBE", href: null },
+];
+
+/**
+ * Footer 하단의 약관성 링크. 아직 실제 페이지는 없지만,
+ * 나중에 해당 경로에 페이지만 추가하면 되도록 구조를 미리 잡아둔다.
+ */
+export const FOOTER_LEGAL_LINKS: FooterLink[] = [
+  { label: "개인정보 처리 안내", href: "/privacy" },
+  { label: "콘텐츠 삭제 요청", href: "/content-removal" },
+];
+
+/** 콘텐츠 삭제/수정 요청 등 문의를 받는 이메일. 나중에 이 값만 바꾸면 된다. */
+export const CONTACT_EMAIL = "contact@example.com";

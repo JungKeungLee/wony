@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchApprovedLetters } from "@/lib/letters";
+import { fetchApprovedLetters, toErrorMessage } from "@/lib/letters";
 import type { Letter } from "@/lib/types";
 import LetterCard from "./LetterCard";
 import LetterModal from "./LetterModal";
@@ -25,9 +25,7 @@ export default function LetterGrid() {
         setStatus("success");
       } catch (err) {
         if (cancelled) return;
-        setErrorMessage(
-          err instanceof Error ? err.message : "편지를 불러오지 못했습니다."
-        );
+        setErrorMessage(toErrorMessage(err, "편지를 불러오지 못했습니다."));
         setStatus("error");
       }
     }

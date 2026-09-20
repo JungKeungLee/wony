@@ -10,7 +10,25 @@ export class SupabaseNotConfiguredError extends Error {
   }
 }
 
-/** 승인된(is_approved = true) 편지만 최신순으로 가져온다. */
+/**
+ * supabase-js는 실패 시 실제 `Error` 인스턴스 대신
+ * { message, details, hint, code } 형태의 일반 객체를 던지는 경우가 있다.
+ * `instanceof Error`만으로는 이 형태를 놓치므로 message 필드까지 함께 확인한다.
+ */
+export function toErrorMessage(err: unknown, fallback = "알 수 없는 오류가 발생했습니다."): string {
+  if (err instanceof Error) return err.message;
+  if (
+    err &&
+    typeof err === "object" &&
+    "message" in err &&
+    typeof (err as { message: unknown }).message === "string"
+  ) {
+    return (err as { message: string }).message;
+  }
+  return fallback;
+}
+
+/** 공개(is_approved = true) 상태인 편지만 최신순으로 가져온다. 관리자가 false로 내리면 여기서 제외된다. */
 export async function fetchApprovedLetters(): Promise<Letter[]> {
   if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
 
@@ -24,10 +42,13 @@ export async function fetchApprovedLetters(): Promise<Letter[]> {
   return (data ?? []) as unknown as Letter[];
 }
 
-/** 편지를 등록한다. is_approved/id/created_at은 보내지 않고 DB 기본값을 따른다. */
+/**
+ * 편지를 등록한다. 별도 승인 절차 없이 is_approved = true로 저장해 즉시 공개한다.
+ * 문제가 있는 편지는 관리자가 Supabase Dashboard에서 is_approved를 false로 내려 숨긴다.
+ */
 export async function submitLetter(input: LetterInput): Promise<void> {
   if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
 
-  const { error } = await supabase.from("letters").insert([input]);
+  const { error } = await supabase.from("letters").insert([{ ...input, is_approved: true }]);
   if (error) throw error;
 }

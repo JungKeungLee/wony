@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { submitLetter } from "@/lib/letters";
+import { submitLetter, toErrorMessage } from "@/lib/letters";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 const MAX_NICKNAME = 30;
@@ -62,9 +62,7 @@ export default function LetterForm() {
       });
       setSubmitState("success");
     } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다."
-      );
+      setSubmitError(toErrorMessage(err));
       setSubmitState("error");
     }
   }
