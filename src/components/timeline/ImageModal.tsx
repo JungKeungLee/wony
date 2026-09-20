@@ -13,6 +13,10 @@ interface ImageModalProps {
   state: ImageModalState | null;
   onClose: () => void;
   onNavigate: (index: number) => void;
+  /** 넘기면 현재 보이는 이미지에 [ 이미지 삭제 ] 버튼이 뜬다 (nonDeletableIndex는 제외). */
+  onDeleteImage?: (index: number) => void;
+  /** 이 인덱스는 삭제 버튼을 보여주지 않는다. 예: 대표 이미지는 이 Modal에서 삭제하지 않는다. */
+  nonDeletableIndex?: number;
 }
 
 function ModalImage({ src, alt }: { src: string; alt: string }) {
@@ -38,7 +42,13 @@ function ModalImage({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-export default function ImageModal({ state, onClose, onNavigate }: ImageModalProps) {
+export default function ImageModal({
+  state,
+  onClose,
+  onNavigate,
+  onDeleteImage,
+  nonDeletableIndex,
+}: ImageModalProps) {
   const isOpen = state !== null;
 
   useEffect(() => {
@@ -69,6 +79,8 @@ export default function ImageModal({ state, onClose, onNavigate }: ImageModalPro
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [state, onClose, onNavigate]);
+
+  const canDelete = state && onDeleteImage && state.index !== nonDeletableIndex;
 
   return (
     <AnimatePresence>
@@ -120,6 +132,21 @@ export default function ImageModal({ state, onClose, onNavigate }: ImageModalPro
           <div onClick={(e) => e.stopPropagation()}>
             <ModalImage key={state.images[state.index]} src={state.images[state.index]} alt={state.alt} />
           </div>
+
+          {canDelete && (
+            <div className="absolute bottom-6 left-6">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteImage(state.index);
+                }}
+                className="border border-pink/30 bg-bg/70 px-4 py-2 text-xs tracking-[0.15em] text-pink/80 backdrop-blur-sm transition-colors hover:border-pink hover:text-pink"
+              >
+                [ 이미지 삭제 ]
+              </button>
+            </div>
+          )}
 
           {state.images.length > 1 && (
             <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs tracking-[0.2em] text-text-soft">

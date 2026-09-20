@@ -1,20 +1,45 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { TimelineMonthData } from "@/lib/types";
+import type { TimelineMonthData, TimelineImageRow } from "@/lib/types";
 import { fadeUp } from "@/lib/motion";
+import { getTimelineImageUrl } from "@/lib/timelineImages";
 import TimelineImage from "./TimelineImage";
+
+const SMALL_IMAGE_SLOTS = 3;
 
 interface TimelineMonthProps {
   data: TimelineMonthData;
   align: "left" | "right";
+  coverImage: TimelineImageRow | undefined;
+  isUploadingCover: boolean;
+  onAddCoverPhoto: () => void;
+  onDeleteCoverPhoto: () => void;
+  smallImages: TimelineImageRow[];
+  uploadingSmallSlot: number | null;
+  onAddSmallPhoto: (sortOrder: number) => void;
   onOpenImage: (images: string[], index: number, alt: string) => void;
 }
 
-export default function TimelineMonth({ data, align, onOpenImage }: TimelineMonthProps) {
+export default function TimelineMonth({
+  data,
+  align,
+  coverImage,
+  isUploadingCover,
+  onAddCoverPhoto,
+  onDeleteCoverPhoto,
+  smallImages,
+  uploadingSmallSlot,
+  onAddSmallPhoto,
+  onOpenImage,
+}: TimelineMonthProps) {
   const { month, monthLabel, date, title, description, quote, images, featured } = data;
-  const [cover, ...rest] = images;
+  const cover = images[0];
   const isRight = align === "right";
+
+  const resolvedCover = coverImage ? getTimelineImageUrl(coverImage.image_path) : cover;
+  const smallImageUrls = smallImages.map((img) => getTimelineImageUrl(img.image_path));
+  const displayedImages = [resolvedCover, ...smallImageUrls];
 
   return (
     <motion.div
@@ -59,32 +84,93 @@ export default function TimelineMonth({ data, align, onOpenImage }: TimelineMont
             </div>
           </div>
 
-          <TimelineImage
-            src={cover}
-            alt={`${title} 대표 이미지`}
-            onClick={() => onOpenImage(images, 0, title)}
-            className={`aspect-[4/3] w-full max-w-md ${featured ? "ring-1 ring-pink/40" : ""}`}
-            sizes="(min-width: 768px) 45vw, 90vw"
-          />
+          <div
+            className={`relative aspect-[4/3] w-full max-w-md ${featured ? "ring-1 ring-pink/40" : ""}`}
+          >
+            <TimelineImage
+              key={resolvedCover}
+              src={resolvedCover}
+              alt={`${title} 대표 이미지`}
+              onClick={() => onOpenImage(displayedImages, 0, title)}
+              className="h-full w-full"
+              sizes="(min-width: 768px) 45vw, 90vw"
+            />
+            {!coverImage ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddCoverPhoto();
+                }}
+                disabled={isUploadingCover}
+                className="absolute bottom-3 right-3 border border-white/20 bg-bg/70 px-3 py-1.5 text-[11px] tracking-[0.1em] text-text-soft backdrop-blur-sm transition-colors hover:border-star hover:text-star disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isUploadingCover ? "등록하는 중..." : "[ 사진 추가 ]"}
+              </button>
+            ) : (
+              <div className="absolute bottom-3 right-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddCoverPhoto();
+                  }}
+                  disabled={isUploadingCover}
+                  className="border border-white/20 bg-bg/70 px-3 py-1.5 text-[11px] tracking-[0.1em] text-text-soft backdrop-blur-sm transition-colors hover:border-star hover:text-star disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUploadingCover ? "변경하는 중..." : "[ 이미지 변경 ]"}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteCoverPhoto();
+                  }}
+                  disabled={isUploadingCover}
+                  className="border border-pink/30 bg-bg/70 px-3 py-1.5 text-[11px] tracking-[0.1em] text-pink/80 backdrop-blur-sm transition-colors hover:border-pink hover:text-pink disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  [ 이미지 삭제 ]
+                </button>
+              </div>
+            )}
+          </div>
 
           <h3 className="font-serif-kr text-xl text-text sm:text-2xl">{title}</h3>
           <p className="max-w-md text-sm text-text-soft sm:text-base">{description}</p>
           <p className="font-serif-kr max-w-md text-sm text-pink/90 italic">“{quote}”</p>
 
-          {rest.length > 0 && (
-            <div className={`grid w-full max-w-md grid-cols-3 gap-2 ${isRight ? "" : "md:justify-items-end"}`}>
-              {rest.map((src, i) => (
-                <TimelineImage
-                  key={src}
-                  src={src}
-                  alt={`${title} 추가 이미지 ${i + 1}`}
-                  onClick={() => onOpenImage(images, i + 1, title)}
-                  className="aspect-square w-full"
-                  sizes="30vw"
-                />
-              ))}
-            </div>
-          )}
+          <div className={`grid w-full max-w-md grid-cols-3 gap-2 ${isRight ? "" : "md:justify-items-end"}`}>
+            {Array.from({ length: SMALL_IMAGE_SLOTS }, (_, i) => {
+              const sortOrder = i + 1;
+              const image = smallImages[i];
+              const isUploading = uploadingSmallSlot === sortOrder;
+
+              if (image) {
+                return (
+                  <TimelineImage
+                    key={image.id}
+                    src={smallImageUrls[i]}
+                    alt={`${title} 작은 이미지 ${sortOrder}`}
+                    onClick={() => onOpenImage(displayedImages, i + 1, title)}
+                    className="aspect-video w-full"
+                    sizes="30vw"
+                  />
+                );
+              }
+
+              return (
+                <button
+                  key={`empty-${sortOrder}`}
+                  type="button"
+                  onClick={() => onAddSmallPhoto(sortOrder)}
+                  disabled={isUploading}
+                  className="flex aspect-video w-full items-center justify-center bg-bg-soft text-[10px] tracking-[0.1em] text-text-soft/50 transition-colors hover:text-star disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isUploading ? "등록 중..." : "[ + 사진 추가 ]"}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </motion.div>

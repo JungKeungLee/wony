@@ -26,6 +26,25 @@ export interface TimelineMonthData {
   featured?: boolean;
 }
 
+/**
+ * Supabase timeline_images 테이블 한 행. TimelineMonthData.month와 연결되는
+ * "관리자가 직접 업로드한" 이미지로, 대표 이미지(is_cover = true, 월당 최대 1장)와
+ * 작은 이미지(is_cover = false, sort_order 1~3, 월당 최대 3장) 둘 다를 나타낸다.
+ * 대표 이미지가 없으면 기존처럼 TimelineMonthData.images[0](정적 fallback, 아직 실제
+ * 파일이 없으면 Placeholder)이 보인다.
+ */
+export interface TimelineImageRow {
+  id: string;
+  month: number;
+  /** Storage 객체 경로. 공개 URL은 getTimelineImageUrl()로 계산한다. */
+  image_path: string;
+  is_cover: boolean;
+  /** 작은 이미지 슬롯 순서(1~3). 대표 이미지는 항상 null. */
+  sort_order: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Supabase letters 테이블 한 행 */
 export interface Letter {
   id: string;
