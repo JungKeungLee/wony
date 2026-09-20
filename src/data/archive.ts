@@ -147,6 +147,13 @@ export const archiveData: ArchiveMonth[] = [
         tags: ["노래", "합방"],
       },
       {
+        id: "2026-02-09",
+        date: "02.09",
+        title: "Silent Breath / 미메시스",
+        description: "공겜",
+        tags: ["공겜", "게임"],
+      },
+      {
         id: "2026-02-14-1",
         date: "02.14",
         title: "꾸한성 셀키배 주식게임 도우미",
@@ -221,6 +228,12 @@ export const archiveData: ArchiveMonth[] = [
         date: "03.14",
         title: "꾸이즈원",
         tags: ["컨텐츠"],
+      },
+      {
+        id: "2026-03-16",
+        date: "03.16",
+        title: "그림자 복도",
+        tags: ["공겜", "게임"],
       },
       {
         id: "2026-03-16-03-18",
@@ -420,6 +433,12 @@ export const archiveData: ArchiveMonth[] = [
         tags: ["합방"],
       },
       {
+        id: "2026-08-12-2",
+        date: "08.12",
+        title: "리나메",
+        tags: ["게임"],
+      },
+      {
         id: "2026-08-14-08-16",
         date: "08.14 ~ 08.16",
         title: "스탈존",
@@ -498,6 +517,13 @@ export const archiveData: ArchiveMonth[] = [
         title: "꾸스동",
         description: "WARDOGS FPS",
         tags: ["꾸스동", "FPS"],
+      },
+      {
+        id: "2026-09-20-captured2",
+        date: "09.20",
+        title: "CAPTURED2",
+        description: "공겜",
+        tags: ["공겜", "게임"],
       },
     ],
   },
