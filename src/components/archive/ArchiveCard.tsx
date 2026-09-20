@@ -1,11 +1,15 @@
 import type { ArchiveItem } from "@/data/archive";
 import type { ArchiveImage } from "@/lib/types";
 import ArchivePhotoSlot from "./ArchivePhotoSlot";
+import HiddenStar from "@/components/effects/HiddenStar";
 
 interface ArchiveCardProps {
   item: ArchiveItem;
   image: ArchiveImage | undefined;
   isUploading: boolean;
+  /** archive-divider 후보 슬롯은 페이지당 하나만 있어야 하므로, 첫 번째 월의 첫 번째
+   * 카드에서만 true로 전달된다. */
+  showDividerDiamond?: boolean;
   onAddPhoto: () => void;
   onOpenPhoto: () => void;
 }
@@ -14,11 +18,19 @@ export default function ArchiveCard({
   item,
   image,
   isUploading,
+  showDividerDiamond = false,
   onAddPhoto,
   onOpenPhoto,
 }: ArchiveCardProps) {
   return (
-    <div className="flex flex-col gap-3 border-b border-white/10 py-5 sm:flex-row sm:items-start sm:gap-6 sm:py-6">
+    <div className="relative flex flex-col gap-3 border-b border-white/10 py-5 sm:flex-row sm:items-start sm:gap-6 sm:py-6">
+      {showDividerDiamond && (
+        <HiddenStar
+          id="archive"
+          variant="archive-divider"
+          className="absolute -bottom-4 left-1/2 -translate-x-1/2"
+        />
+      )}
       <div className="order-1 flex shrink-0 flex-col gap-1 sm:w-40 md:w-44">
         <span className="font-display text-sm tracking-[0.1em] text-star sm:text-base">
           {item.date}

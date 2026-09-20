@@ -8,6 +8,7 @@ import type { FanArt } from "@/lib/types";
 import FanArtCard from "./FanArtCard";
 import FanArtModal from "./FanArtModal";
 import StatusToast from "@/components/ui/StatusToast";
+import HiddenStar from "@/components/effects/HiddenStar";
 
 type Status = "loading" | "success" | "error";
 
@@ -84,7 +85,9 @@ export default function FanArtGallery() {
 
   return (
     <>
-      <div className="mx-auto max-w-6xl columns-1 gap-5 px-6 pb-32 sm:columns-2 lg:columns-3">
+      <div className="relative mx-auto max-w-6xl columns-1 gap-5 px-6 pb-32 sm:columns-2 lg:columns-3">
+        <HiddenStar id="fanArt" variant="fanart-grid" className="absolute -top-8 right-6" />
+        <HiddenStar id="fanArt" variant="fanart-bottom" className="absolute -bottom-8 right-6" />
         {arts.map((art, i) => (
           <FanArtCard
             key={art.id}

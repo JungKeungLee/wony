@@ -2,6 +2,7 @@
 
 import BestClipCard from "./BestClipCard";
 import type { VideoItem } from "@/lib/types";
+import HiddenStar from "@/components/effects/HiddenStar";
 
 interface RankedClip {
   rank: 1 | 2 | 3;
@@ -27,6 +28,11 @@ export default function BestClipsSection({
 
   return (
     <section className="relative mt-8 border-t border-white/10 pt-16 pb-32">
+      <HiddenStar
+        id="video"
+        variant="video-best"
+        className="absolute right-5 top-6 sm:right-8 sm:top-8"
+      />
       <span
         aria-hidden
         className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-bg px-3 text-sm text-star"

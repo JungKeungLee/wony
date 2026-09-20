@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function VideosHero() {
   return (
-    <section className="flex flex-col items-center gap-6 px-6 pb-14 pt-32 text-center sm:pt-40">
+    <section className="relative flex flex-col items-center gap-6 px-6 pb-14 pt-32 text-center sm:pt-40">
       <span className="font-display text-xs tracking-[0.4em] text-star">
         WONY CINEMA
       </span>

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Noto_Sans_KR, Nanum_Myeongjo, Playfair_Display } from "next/font/google";
 import { MusicProvider } from "@/context/MusicContext";
+import { StarCollectionProvider } from "@/context/StarCollectionContext";
 import StarField from "@/components/effects/StarField";
+import StarProgressBadge from "@/components/effects/StarProgressBadge";
+import StarUnlockCelebration from "@/components/effects/StarUnlockCelebration";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
@@ -36,9 +39,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full bg-bg text-text">
         <MusicProvider>
-          <StarField />
-          {children}
-          <Footer />
+          <StarCollectionProvider>
+            <StarField />
+            {children}
+            <Footer />
+            <StarProgressBadge />
+            <StarUnlockCelebration />
+          </StarCollectionProvider>
         </MusicProvider>
       </body>
     </html>

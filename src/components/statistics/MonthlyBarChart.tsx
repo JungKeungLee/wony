@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import type { MonthlyStat } from "@/lib/types";
+import HiddenStar from "@/components/effects/HiddenStar";
 
 const MONTH_LABELS = [
   "JAN",
@@ -51,7 +52,12 @@ export default function MonthlyBarChart({ data }: { data: MonthlyStat[] }) {
         </button>
       </div>
 
-      <div className="flex items-end justify-between gap-1.5 sm:gap-3">
+      <div className="relative flex items-end justify-between gap-1.5 sm:gap-3">
+        <HiddenStar
+          id="statistics"
+          variant="statistics-chart"
+          className="absolute -right-2 -top-8 sm:-right-3"
+        />
         {data.map((d, i) => {
           const value = d[mode];
           const heightPct = Math.max((value / max) * 100, 4);

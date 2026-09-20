@@ -1,6 +1,6 @@
 export default function TimelineHero() {
   return (
-    <section className="flex flex-col items-center gap-6 px-6 pb-16 pt-32 text-center sm:pt-40">
+    <section className="relative flex flex-col items-center gap-6 px-6 pb-16 pt-32 text-center sm:pt-40">
       <span className="font-display text-xs tracking-[0.4em] text-star">OUR YEAR</span>
       <h1 className="font-display text-4xl tracking-wide text-text sm:text-6xl">
         2026 TIMELINE

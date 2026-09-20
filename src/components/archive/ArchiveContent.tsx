@@ -129,10 +129,11 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
         className="sr-only"
       />
 
-      {months.map((monthData) => (
+      {months.map((monthData, i) => (
         <ArchiveMonthSection
           key={monthData.month}
           {...monthData}
+          isFirst={i === 0}
           images={images}
           uploadingId={uploadingId}
           onAddPhoto={requestPhoto}

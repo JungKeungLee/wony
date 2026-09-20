@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion";
 import { CONTACT_EMAIL, FOOTER_LEGAL_LINKS, FOOTER_SOCIAL_LINKS } from "@/lib/constants";
+import { useStarCollection } from "@/context/StarCollectionContext";
 import type { FooterLink } from "@/lib/types";
 
 function FooterLinkItem({ link }: { link: FooterLink }) {
@@ -39,6 +41,10 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
 }
 
 export default function Footer() {
+  const pathname = usePathname();
+  const { isUnlocked } = useStarCollection();
+  const showFinalPageLink = isUnlocked && pathname !== "/surprise";
+
   return (
     <motion.footer
       initial="hidden"
@@ -112,6 +118,16 @@ export default function Footer() {
         <p className="text-[10px] tracking-[0.1em] text-text-soft/50">
           © 2026 WONY FAN PROJECT
         </p>
+
+        {/* 별 7개를 모두 모은 방문자에게만 보이는 숨겨진 마지막 페이지 입구. */}
+        {showFinalPageLink && (
+          <Link
+            href="/surprise"
+            className="mt-2 border border-star/30 px-5 py-2 text-[11px] tracking-[0.2em] text-star/80 transition-colors hover:border-star hover:text-star"
+          >
+            [ THE FINAL PAGE ]
+          </Link>
+        )}
       </div>
     </motion.footer>
   );

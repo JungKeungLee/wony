@@ -4,8 +4,12 @@ import { motion } from "framer-motion";
 import type { ArchiveMonth } from "@/data/archive";
 import type { ArchiveImage } from "@/lib/types";
 import ArchiveCard from "./ArchiveCard";
+import HiddenStar from "@/components/effects/HiddenStar";
 
 interface ArchiveMonthSectionProps extends ArchiveMonth {
+  /** archive-month-title/archive-divider 후보 슬롯이 12번 반복되지 않도록 첫 번째
+   * 월 섹션에서만 실제로 렌더링한다. */
+  isFirst: boolean;
   images: Map<string, ArchiveImage>;
   uploadingId: string | null;
   onAddPhoto: (archiveId: string) => void;
@@ -16,6 +20,7 @@ export default function ArchiveMonthSection({
   month,
   monthLabel,
   items,
+  isFirst,
   images,
   uploadingId,
   onAddPhoto,
@@ -26,7 +31,14 @@ export default function ArchiveMonthSection({
       id={`month-${month}`}
       className="mx-auto max-w-[1000px] scroll-mt-32 px-6 py-10"
     >
-      <div className="mb-6 flex items-baseline gap-3">
+      <div className="relative mb-6 flex items-baseline gap-3">
+        {isFirst && (
+          <HiddenStar
+            id="archive"
+            variant="archive-month-title"
+            className="absolute -right-7 -top-2 sm:-right-9"
+          />
+        )}
         <span className="font-display text-3xl text-text-soft/30 sm:text-4xl">
           {String(month).padStart(2, "0")}
         </span>
@@ -43,12 +55,13 @@ export default function ArchiveMonthSection({
       >
         {items.length > 0 ? (
           <div className="flex flex-col">
-            {items.map((item) => (
+            {items.map((item, i) => (
               <ArchiveCard
                 key={item.id}
                 item={item}
                 image={images.get(item.id)}
                 isUploading={uploadingId === item.id}
+                showDividerDiamond={isFirst && i === 0}
                 onAddPhoto={() => onAddPhoto(item.id)}
                 onOpenPhoto={() => onOpenPhoto(item.id)}
               />
