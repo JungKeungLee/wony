@@ -6,7 +6,8 @@ import { submitVideo } from "@/lib/videos";
 import { toErrorMessage } from "@/lib/letters";
 import { getMissingSupabaseEnvVars, isSupabaseConfigured } from "@/lib/supabase";
 import { getPlatformLabel, parseVideoUrl } from "@/lib/videoPlatform";
-import type { VideoPlatform } from "@/lib/types";
+import { VIDEO_CATEGORIES, getCategoryLabel } from "@/lib/videoCategory";
+import type { VideoCategory, VideoPlatform } from "@/lib/types";
 
 const MAX_NICKNAME = 30;
 const MAX_TITLE = 100;
@@ -17,6 +18,8 @@ interface FieldErrors {
   title?: string;
   url?: string;
   message?: string;
+  month?: string;
+  category?: string;
 }
 
 export default function VideoForm() {
@@ -24,6 +27,8 @@ export default function VideoForm() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [message, setMessage] = useState("");
+  const [month, setMonth] = useState("");
+  const [category, setCategory] = useState<VideoCategory | "">("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitState, setSubmitState] = useState<
     "idle" | "submitting" | "success" | "error"
@@ -57,13 +62,16 @@ export default function VideoForm() {
     if (trimmedMessage.length > MAX_MESSAGE)
       next.message = `${MAX_MESSAGE}자 이내로 입력해주세요.`;
 
+    if (!month) next.month = "몇 월 클립인지 선택해주세요.";
+    if (!category) next.category = "카테고리를 선택해주세요.";
+
     setErrors(next);
     return Object.keys(next).length === 0;
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!validate() || !parsed) return;
+    if (!validate() || !parsed || !category) return;
 
     setSubmitState("submitting");
     try {
@@ -74,6 +82,8 @@ export default function VideoForm() {
         video_url: url.trim(),
         video_id: parsed.videoId,
         message: message.trim() || null,
+        month: Number(month),
+        category,
       });
       setSubmitState("success");
     } catch (err) {
@@ -175,6 +185,48 @@ export default function VideoForm() {
           </p>
         )}
         {errors.url && <p className="text-xs text-pink">{errors.url}</p>}
+      </div>
+
+      <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+        <div className="flex flex-1 flex-col gap-2">
+          <label htmlFor="month" className="text-xs tracking-[0.2em] text-text-soft">
+            몇 월 클립인가요?
+          </label>
+          <select
+            id="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="border border-white/15 bg-bg-soft px-4 py-3 text-text outline-none transition-colors focus:border-pink"
+          >
+            <option value="">선택해주세요</option>
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {m}월
+              </option>
+            ))}
+          </select>
+          {errors.month && <p className="text-xs text-pink">{errors.month}</p>}
+        </div>
+
+        <div className="flex flex-1 flex-col gap-2">
+          <label htmlFor="category" className="text-xs tracking-[0.2em] text-text-soft">
+            카테고리
+          </label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as VideoCategory)}
+            className="border border-white/15 bg-bg-soft px-4 py-3 text-text outline-none transition-colors focus:border-pink"
+          >
+            <option value="">선택해주세요</option>
+            {VIDEO_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {getCategoryLabel(c)}
+              </option>
+            ))}
+          </select>
+          {errors.category && <p className="text-xs text-pink">{errors.category}</p>}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

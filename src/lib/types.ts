@@ -61,6 +61,9 @@ export type FanArtInput = Pick<FanArt, "nickname" | "title" | "message" | "image
 /** 지원하는 영상 플랫폼. 새 플랫폼을 추가할 때 이 유니온에만 추가하면 된다. */
 export type VideoPlatform = "youtube" | "soop";
 
+/** VIDEO(WONY CINEMA) 클립 카테고리. 새 카테고리를 추가할 때 이 유니온에만 추가하면 된다. */
+export type VideoCategory = "legend" | "funny" | "touching" | "collab" | "game" | "fan_pick";
+
 /** Supabase videos 테이블 한 행 */
 export interface VideoItem {
   id: string;
@@ -70,14 +73,19 @@ export interface VideoItem {
   video_url: string;
   video_id: string;
   message: string | null;
+  /** 1~12. 어느 달의 하이라이트 클립인지 */
+  month: number;
+  category: VideoCategory;
+  /** null = 일반 클립, 1~3 = 2026 BEST #1~#3. 관리자가 Dashboard에서만 설정한다. */
+  best_rank: number | null;
   is_approved: boolean;
   created_at: string;
 }
 
-/** 영상 등록 시 클라이언트가 채우는 값 */
+/** 영상 등록 시 클라이언트가 채우는 값 (best_rank는 폼에 노출하지 않고 관리자가 별도로 설정) */
 export type VideoInput = Pick<
   VideoItem,
-  "nickname" | "title" | "platform" | "video_url" | "video_id" | "message"
+  "nickname" | "title" | "platform" | "video_url" | "video_id" | "message" | "month" | "category"
 >;
 
 /** Footer 등에서 쓰는 링크. href가 없으면(null) 클릭 불가능한 placeholder로 표시한다. */

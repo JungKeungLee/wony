@@ -6,15 +6,16 @@ import { getPlatformBadge, getVideoThumbnail } from "@/lib/videoPlatform";
 import { getCategoryLabel } from "@/lib/videoCategory";
 import type { VideoItem } from "@/lib/types";
 
-interface VideoCardProps {
+interface BestClipCardProps {
   video: VideoItem;
-  delay?: number;
+  rank: 1 | 2 | 3;
   onOpen: () => void;
 }
 
-export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) {
+export default function BestClipCard({ video, rank, onOpen }: BestClipCardProps) {
   const [hasError, setHasError] = useState(false);
   const thumbnail = getVideoThumbnail(video.platform, video.video_id);
+  const isLarge = rank === 1;
 
   return (
     <motion.button
@@ -23,12 +24,12 @@ export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) 
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.8, ease: "easeOut", delay }}
-      className="group flex flex-col overflow-hidden border border-white/10 bg-bg-soft/50 text-left transition-colors hover:border-pink/50"
+      transition={{ duration: 0.8, ease: "easeOut", delay: (rank - 1) * 0.1 }}
+      className="group flex flex-col overflow-hidden border border-star/20 bg-bg-soft/50 text-left transition-colors hover:border-star/50"
     >
       <div className="relative aspect-video w-full overflow-hidden bg-bg-soft">
         {thumbnail && !hasError ? (
-          // eslint-disable-next-line @next/next/no-img-element -- 외부 플랫폼 썸네일(YouTube 등)이라 next/image 대상이 아님
+          // eslint-disable-next-line @next/next/no-img-element -- 외부 플랫폼 썸네일이라 next/image 대상이 아님
           <img
             src={thumbnail}
             alt={video.title}
@@ -45,14 +46,16 @@ export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) 
           </div>
         )}
 
-        <div className="absolute left-2 top-2 flex flex-wrap gap-1">
-          <span className="border border-white/20 bg-black/60 px-2 py-1 text-[10px] tracking-[0.15em] text-text">
-            {getPlatformBadge(video.platform)}
-          </span>
-          <span className="border border-white/20 bg-black/60 px-2 py-1 text-[10px] tracking-[0.15em] text-text-soft">
-            {getCategoryLabel(video.category)}
-          </span>
-        </div>
+        <span
+          className={`absolute left-2 top-2 border border-star/50 bg-black/70 tracking-[0.1em] text-star ${
+            isLarge ? "px-3 py-1.5 text-sm" : "px-2 py-1 text-[10px]"
+          }`}
+        >
+          BEST #{rank}
+        </span>
+        <span className="absolute right-2 top-2 border border-white/20 bg-black/60 px-2 py-1 text-[10px] tracking-[0.15em] text-text-soft">
+          {getPlatformBadge(video.platform)}
+        </span>
 
         <span
           aria-hidden
@@ -64,8 +67,11 @@ export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) 
         </span>
       </div>
 
-      <div className="flex flex-col gap-1 px-4 py-4">
-        <p className="font-serif-kr truncate text-sm text-text sm:text-base">
+      <div className={`flex flex-col gap-1 px-4 ${isLarge ? "py-5" : "py-3"}`}>
+        <span className="text-[10px] tracking-[0.1em] text-text-soft/60">
+          {getCategoryLabel(video.category)}
+        </span>
+        <p className={`font-serif-kr text-text ${isLarge ? "text-lg sm:text-2xl" : "text-sm sm:text-base"}`}>
           {video.title}
         </p>
         <p className="text-xs text-text-soft">From. {video.nickname}</p>

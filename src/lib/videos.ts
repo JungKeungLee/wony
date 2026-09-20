@@ -2,7 +2,8 @@ import { isSupabaseConfigured, supabase } from "./supabase";
 import { SupabaseNotConfiguredError } from "./letters";
 import type { VideoInput, VideoItem } from "./types";
 
-const VIDEO_COLUMNS = "id,nickname,title,platform,video_url,video_id,message,created_at";
+const VIDEO_COLUMNS =
+  "id,nickname,title,platform,video_url,video_id,message,month,category,best_rank,created_at";
 
 /** 공개(is_approved = true) 상태인 영상만 최신순으로 가져온다. 관리자가 false로 내리면 여기서 제외된다. */
 export async function fetchApprovedVideos(): Promise<VideoItem[]> {

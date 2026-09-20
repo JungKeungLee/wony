@@ -7,10 +7,10 @@ export default function VideosHero() {
         WONY CINEMA
       </span>
       <h1 className="font-display text-4xl tracking-wide text-text sm:text-6xl">
-        VIDEO
+        2026 BEST CLIPS
       </h1>
       <p className="font-serif-kr max-w-md text-base text-text-soft sm:text-lg">
-        2026년 우리의 순간을 영상으로
+        워냥이들이 다시 보고 싶은 2026년의 순간들
       </p>
       <Link
         href="/videos/write"

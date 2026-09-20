@@ -9,6 +9,7 @@ import {
   getVideoWatchUrl,
   getWatchButtonLabel,
 } from "@/lib/videoPlatform";
+import { getCategoryLabel } from "@/lib/videoCategory";
 import type { VideoItem } from "@/lib/types";
 
 interface VideoModalProps {
@@ -152,9 +153,19 @@ export default function VideoModal({ videos, index, onClose, onNavigate }: Video
             </div>
 
             <div className="flex flex-col gap-2 px-6 py-6 sm:px-8">
-              <span className="w-fit border border-white/20 px-2 py-1 text-[10px] tracking-[0.15em] text-text-soft">
-                {getPlatformBadge(video.platform)}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="border border-white/20 px-2 py-1 text-[10px] tracking-[0.15em] text-text-soft">
+                  {getPlatformBadge(video.platform)}
+                </span>
+                <span className="border border-white/20 px-2 py-1 text-[10px] tracking-[0.15em] text-text-soft">
+                  {getCategoryLabel(video.category)}
+                </span>
+                {video.best_rank !== null && (
+                  <span className="border border-star/40 px-2 py-1 text-[10px] tracking-[0.1em] text-star">
+                    ⭐ 2026 BEST #{video.best_rank}
+                  </span>
+                )}
+              </div>
               <h3 className="font-serif-kr text-lg text-text sm:text-xl">{video.title}</h3>
               <p className="text-xs tracking-[0.15em] text-star">From. {video.nickname}</p>
               {video.message && (

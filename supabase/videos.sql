@@ -13,6 +13,15 @@ create table if not exists public.videos (
   video_url text not null,
   video_id text not null,
   message text check (message is null or char_length(message) <= 300),
+  -- 1~12. 어느 달의 하이라이트 클립인지 (VIDEO 페이지의 월별 섹션/필터 기준)
+  month integer not null check (month between 1 and 12),
+  -- 새 카테고리를 지원하게 되면 이 체크에 값만 추가하면 된다.
+  category text not null default 'legend'
+    check (category in ('legend', 'funny', 'touching', 'collab', 'game', 'fan_pick')),
+  -- null = 일반 월별 추천 클립, 1~3 = 2026 BEST #1~#3.
+  -- 새 영상을 등록하는 게 아니라 이미 있는 영상에 순위만 매기는 방식이라
+  -- 등록 폼에는 노출하지 않고 관리자가 Dashboard에서만 지정한다.
+  best_rank integer check (best_rank is null or best_rank between 1 and 3),
   -- true = 공개, false = 숨김. 별도 승인 절차 없이 기본값부터 공개 상태로 저장된다.
   -- (letters/fan_arts와 동일한 정책)
   is_approved boolean not null default true,
@@ -22,6 +31,11 @@ create table if not exists public.videos (
 create index if not exists videos_approved_created_at_idx
   on public.videos (created_at desc)
   where is_approved = true;
+
+-- BEST #1/#2/#3은 각각 한 영상에만 지정되도록 보장한다.
+create unique index if not exists videos_best_rank_unique
+  on public.videos (best_rank)
+  where best_rank is not null;
 
 alter table public.videos enable row level security;
 
