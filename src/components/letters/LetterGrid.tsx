@@ -6,7 +6,6 @@ import type { Letter } from "@/lib/types";
 import LetterCard from "./LetterCard";
 import LetterModal from "./LetterModal";
 import StatusToast from "@/components/ui/StatusToast";
-import HiddenStar from "@/components/effects/HiddenStar";
 
 type Status = "loading" | "success" | "error";
 
@@ -83,8 +82,7 @@ export default function LetterGrid() {
 
   return (
     <>
-      <div className="relative mx-auto grid max-w-5xl grid-cols-1 gap-5 px-6 pb-32 sm:grid-cols-2 lg:grid-cols-3">
-        <HiddenStar id="letter" variant="letter-cards" className="absolute -top-8 right-6" />
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 px-6 pb-32 sm:grid-cols-2 lg:grid-cols-3">
         {letters.map((letter, i) => (
           <LetterCard
             key={letter.id}

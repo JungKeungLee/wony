@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { readSurpriseUnlocked, writeSurpriseUnlocked } from "@/lib/surpriseAccess";
-import { resolveDiamondPositions, type DiamondVariant } from "@/lib/diamondPositions";
 
 const STARS_STORAGE_KEY = "wony-surprise-stars";
 
@@ -32,8 +31,6 @@ interface StarCollectionContextValue {
   isCollected: (id: StarId) => boolean;
   collectStar: (id: StarId) => void;
   isUnlocked: boolean;
-  /** 이 페이지에서 다이아를 어느 후보 위치에 보여줄지. 아직 로드 전이면 null. */
-  getDiamondVariant: (id: StarId) => DiamondVariant | null;
   /** 방금 첫 별을 모아서 안내 문구를 보여줘야 하는 순간. 한 번 확인시키면 계속 false로 남는다. */
   firstStarJustFound: boolean;
   dismissFirstStarHint: () => void;
@@ -77,16 +74,12 @@ export function StarCollectionProvider({ children }: { children: ReactNode }) {
   // 한 번만 채워 넣는다 - "you might not need an effect"가 권장하는 안전한 패턴이다.
   const [collectedStars, setCollectedStars] = useState<StarId[]>([]);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [diamondPositions, setDiamondPositions] = useState<Record<StarId, DiamondVariant> | null>(
-    null
-  );
   const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
 
   if (hasMounted && !hasLoadedFromStorage) {
     setHasLoadedFromStorage(true);
     setCollectedStars(readStoredStars());
     setIsUnlocked(readSurpriseUnlocked());
-    setDiamondPositions(resolveDiamondPositions(ALL_STAR_IDS));
   }
 
   const [firstStarJustFound, setFirstStarJustFound] = useState(false);
@@ -95,11 +88,6 @@ export function StarCollectionProvider({ children }: { children: ReactNode }) {
   const isCollected = useCallback(
     (id: StarId) => collectedStars.includes(id),
     [collectedStars]
-  );
-
-  const getDiamondVariant = useCallback(
-    (id: StarId) => diamondPositions?.[id] ?? null,
-    [diamondPositions]
   );
 
   const collectStar = useCallback((id: StarId) => {
@@ -129,7 +117,6 @@ export function StarCollectionProvider({ children }: { children: ReactNode }) {
       isCollected,
       collectStar,
       isUnlocked,
-      getDiamondVariant,
       firstStarJustFound,
       dismissFirstStarHint,
       justUnlocked,
@@ -140,7 +127,6 @@ export function StarCollectionProvider({ children }: { children: ReactNode }) {
       isCollected,
       collectStar,
       isUnlocked,
-      getDiamondVariant,
       firstStarJustFound,
       dismissFirstStarHint,
       justUnlocked,

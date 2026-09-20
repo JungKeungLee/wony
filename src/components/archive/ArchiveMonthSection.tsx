@@ -7,8 +7,8 @@ import ArchiveCard from "./ArchiveCard";
 import HiddenStar from "@/components/effects/HiddenStar";
 
 interface ArchiveMonthSectionProps extends ArchiveMonth {
-  /** archive-month-title/archive-divider 후보 슬롯이 12번 반복되지 않도록 첫 번째
-   * 월 섹션에서만 실제로 렌더링한다. */
+  /** ARCHIVE 페이지의 고정 다이아 위치(첫 번째 월 제목 옆)가 12번 반복되지 않도록
+   * 첫 번째 월 섹션에서만 실제로 렌더링한다. */
   isFirst: boolean;
   images: Map<string, ArchiveImage>;
   uploadingId: string | null;
@@ -33,11 +33,7 @@ export default function ArchiveMonthSection({
     >
       <div className="relative mb-6 flex items-baseline gap-3">
         {isFirst && (
-          <HiddenStar
-            id="archive"
-            variant="archive-month-title"
-            className="absolute -right-7 -top-2 sm:-right-9"
-          />
+          <HiddenStar id="archive" className="absolute -right-7 -top-2 sm:-right-9" />
         )}
         <span className="font-display text-3xl text-text-soft/30 sm:text-4xl">
           {String(month).padStart(2, "0")}
@@ -55,13 +51,12 @@ export default function ArchiveMonthSection({
       >
         {items.length > 0 ? (
           <div className="flex flex-col">
-            {items.map((item, i) => (
+            {items.map((item) => (
               <ArchiveCard
                 key={item.id}
                 item={item}
                 image={images.get(item.id)}
                 isUploading={uploadingId === item.id}
-                showDividerDiamond={isFirst && i === 0}
                 onAddPhoto={() => onAddPhoto(item.id)}
                 onOpenPhoto={() => onOpenPhoto(item.id)}
               />

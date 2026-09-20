@@ -24,11 +24,7 @@ export default function Hero() {
 
   return (
     <section className="relative isolate flex h-svh flex-col items-center justify-center overflow-hidden bg-bg px-6 text-center">
-      <HiddenStar
-        id="home"
-        variant="home-hero-stars"
-        className="absolute right-5 top-20 sm:right-8 sm:top-24"
-      />
+      <HiddenStar id="home" className="absolute right-5 top-20 sm:right-8 sm:top-24" />
       <motion.div
         className="absolute inset-0 -z-10"
         initial={{ opacity: 0.4, scale: 1.04, filter: "blur(3px) brightness(0.85)" }}
@@ -64,14 +60,9 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...t(TIMING.subtitle), ease: "easeOut" }}
-          className="relative font-display text-xs tracking-[0.4em] text-text-soft sm:text-sm"
+          className="font-display text-xs tracking-[0.4em] text-text-soft sm:text-sm"
         >
           OUR MEMORIES OF 2026
-          <HiddenStar
-            id="home"
-            variant="home-subtitle"
-            className="absolute -right-7 top-1/2 -translate-y-1/2 sm:-right-9"
-          />
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 8 }}
@@ -89,11 +80,6 @@ export default function Hero() {
         transition={t(TIMING.chrome)}
         className="absolute bottom-10 flex flex-col items-center gap-2 text-text-soft"
       >
-        <HiddenStar
-          id="home"
-          variant="home-scroll"
-          className="absolute -right-9 top-1/2 -translate-y-1/2"
-        />
         <span className="text-[10px] tracking-[0.3em]">SCROLL</span>
         <motion.span
           animate={{ y: [0, 8, 0] }}

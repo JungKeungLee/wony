@@ -211,18 +211,13 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
         className="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px -translate-x-1/2 bg-[linear-gradient(to_bottom,transparent_0%,rgba(255,255,255,0.16)_6%,rgba(255,255,255,0.16)_94%,transparent_100%)] md:block"
       />
 
-      <HiddenStar
-        id="timeline"
-        variant="timeline-line"
-        className="absolute left-1/2 top-[38%] -translate-x-1/2"
-      />
+      <HiddenStar id="timeline" className="absolute left-1/2 top-[38%] -translate-x-1/2" />
 
       <div className="flex flex-col gap-20 md:gap-28">
         {months.map((data, i) => (
           <TimelineMonth
             key={data.month}
             data={data}
-            isFirst={i === 0}
             align={i % 2 === 0 ? "left" : "right"}
             coverImage={coverImages.get(data.month)}
             isUploadingCover={uploadingMonth === data.month}

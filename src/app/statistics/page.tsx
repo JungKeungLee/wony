@@ -34,12 +34,7 @@ export default function StatisticsPage() {
         <section className="mx-auto max-w-4xl px-6 pb-16">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {highlights.map((highlight, i) => (
-              <StatCard
-                key={highlight.label}
-                {...highlight}
-                delay={i * 0.1}
-                showDiamond={i === 0}
-              />
+              <StatCard key={highlight.label} {...highlight} delay={i * 0.1} />
             ))}
           </div>
         </section>

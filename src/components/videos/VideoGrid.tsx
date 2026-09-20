@@ -10,7 +10,6 @@ import VideoCard from "./VideoCard";
 import VideoModal from "./VideoModal";
 import BestClipsSection from "./BestClipsSection";
 import StatusToast from "@/components/ui/StatusToast";
-import HiddenStar from "@/components/effects/HiddenStar";
 
 type Status = "loading" | "success" | "error";
 
@@ -156,11 +155,6 @@ export default function VideoGrid() {
           ))}
         </div>
       </nav>
-      {/* 스크롤 가능한 월 탭 줄 위에 다이아를 겹치면 탭 클릭을 방해할 수 있어, nav
-          바로 아래(다음 섹션이 시작되기 전 여백)에 살짝 걸치도록 배치한다. */}
-      <div className="relative mx-auto max-w-4xl px-4 sm:px-6">
-        <HiddenStar id="video" variant="video-month-tabs" className="absolute right-2 top-1" />
-      </div>
 
       {monthGroups.length === 0 ? (
         <div className="px-6 py-24 text-center">
@@ -168,7 +162,7 @@ export default function VideoGrid() {
         </div>
       ) : (
         <div className="mx-auto max-w-5xl px-6 pb-8">
-          {monthGroups.map(({ month, items }, groupIndex) => (
+          {monthGroups.map(({ month, items }) => (
             <section key={month} className="py-10">
               <div className="mb-6 flex items-baseline gap-3">
                 <span className="font-display text-2xl text-text-soft/30 sm:text-3xl">
@@ -179,14 +173,7 @@ export default function VideoGrid() {
                 </span>
               </div>
 
-              <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {groupIndex === 0 && (
-                  <HiddenStar
-                    id="video"
-                    variant="video-grid"
-                    className="absolute -top-8 right-0"
-                  />
-                )}
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((video, i) => (
                   <VideoCard
                     key={video.id}

@@ -5,15 +5,11 @@ import type { TimelineMonthData, TimelineImageRow } from "@/lib/types";
 import { fadeUp } from "@/lib/motion";
 import { getTimelineImageUrl } from "@/lib/timelineImages";
 import TimelineImage from "./TimelineImage";
-import HiddenStar from "@/components/effects/HiddenStar";
 
 const SMALL_IMAGE_SLOTS = 3;
 
 interface TimelineMonthProps {
   data: TimelineMonthData;
-  /** 페이지당 하나만 있어야 하는 timeline-month-number/timeline-gallery 후보 슬롯을
-   * 12번 반복해서 그리지 않도록, 첫 번째 달에서만 실제로 렌더링한다. */
-  isFirst: boolean;
   align: "left" | "right";
   coverImage: TimelineImageRow | undefined;
   isUploadingCover: boolean;
@@ -27,7 +23,6 @@ interface TimelineMonthProps {
 
 export default function TimelineMonth({
   data,
-  isFirst,
   align,
   coverImage,
   isUploadingCover,
@@ -73,16 +68,7 @@ export default function TimelineMonth({
             </span>
           )}
 
-          <div
-            className={`relative flex items-baseline gap-3 ${isRight ? "" : "md:flex-row-reverse"}`}
-          >
-            {isFirst && (
-              <HiddenStar
-                id="timeline"
-                variant="timeline-month-number"
-                className="absolute -right-7 -top-3 sm:-right-9"
-              />
-            )}
+          <div className={`flex items-baseline gap-3 ${isRight ? "" : "md:flex-row-reverse"}`}>
             <span
               className={`font-display text-4xl sm:text-5xl ${
                 featured ? "text-pink/70" : "text-text-soft/30"
@@ -153,18 +139,7 @@ export default function TimelineMonth({
           <p className="max-w-md text-sm text-text-soft sm:text-base">{description}</p>
           <p className="font-serif-kr max-w-md text-sm text-pink/90 italic">“{quote}”</p>
 
-          <div
-            className={`relative grid w-full max-w-md grid-cols-3 gap-2 ${
-              isRight ? "" : "md:justify-items-end"
-            }`}
-          >
-            {isFirst && (
-              <HiddenStar
-                id="timeline"
-                variant="timeline-gallery"
-                className="absolute -bottom-7 right-0"
-              />
-            )}
+          <div className={`grid w-full max-w-md grid-cols-3 gap-2 ${isRight ? "" : "md:justify-items-end"}`}>
             {Array.from({ length: SMALL_IMAGE_SLOTS }, (_, i) => {
               const sortOrder = i + 1;
               const image = smallImages[i];
