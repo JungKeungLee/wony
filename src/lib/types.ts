@@ -145,6 +145,8 @@ export interface ArchiveEntryRow {
   tags: string[];
   created_at: string;
   updated_at: string;
+  /** null이면 삭제되지 않은 기록. 값이 있으면 soft delete된 시각(화면에서는 숨겨진다). */
+  deleted_at: string | null;
 }
 
 /** ARCHIVE 기록 등록/수정 시 클라이언트가 채우는 값. archive_id는 서버(클라이언트 코드)가 자동 생성한다. */

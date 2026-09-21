@@ -27,7 +27,7 @@ import { toErrorMessage } from "@/lib/letters";
 import { prepareThumbnailForUpload, validateImageFile } from "@/lib/imageProcessing";
 import ArchiveMonthSection from "./ArchiveMonthSection";
 import ArchiveImageModal from "./ArchiveImageModal";
-import ArchiveEntryForm from "./ArchiveEntryForm";
+import ArchiveEntryForm, { type ArchiveEntryMedia } from "./ArchiveEntryForm";
 import StatusToast from "@/components/ui/StatusToast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
@@ -46,7 +46,16 @@ const MONTH_LABELS = [
   "DECEMBER",
 ];
 
-type EntryFormState = null | { mode: "create" } | { mode: "edit"; archiveId: string; initial: ArchiveEntryInput };
+type EntryFormState =
+  | null
+  | { mode: "create" }
+  | {
+      mode: "edit";
+      archiveId: string;
+      initial: ArchiveEntryInput;
+      initialImage: ArchiveImage | null;
+      initialComment: ArchiveComment | null;
+    };
 
 export default function ArchiveContent() {
   const [entries, setEntries] = useState<ArchiveEntryRow[]>([]);
@@ -214,18 +223,87 @@ export default function ArchiveContent() {
     });
   }
 
-  // ---- 기록(날짜/메인주제/서브주제/해시태그) 등록/수정/삭제 ----
+  // ---- 기록(날짜/메인주제/서브주제/해시태그/대표 이미지/MEMORY NOTE) 통합 등록/수정 ----
 
-  async function handleEntrySubmit(input: ArchiveEntryInput): Promise<void> {
-    if (entryForm?.mode === "edit") {
-      const archiveId = entryForm.archiveId;
+  /**
+   * 등록/수정 Modal 하나에서 기록 본문 + 대표 이미지 + MEMORY NOTE를 한 번에 저장한다.
+   * 순서: ① archive_entries 저장(실패하면 전체를 실패로 처리하고 중단) -> ② 대표
+   * 이미지 처리 -> ③ MEMORY NOTE 처리. ②③은 서로 독립적으로 시도해서, 하나가 실패해도
+   * 나머지는 계속 진행하고 실패한 단계만 사용자에게 알려준다(본문은 이미 저장됐으므로).
+   */
+  async function handleEntrySubmit(input: ArchiveEntryInput, media: ArchiveEntryMedia): Promise<void> {
+    const isEdit = entryForm?.mode === "edit";
+    let archiveId: string;
+
+    if (isEdit && entryForm?.mode === "edit") {
+      archiveId = entryForm.archiveId;
       const saved = await updateArchiveEntry(archiveId, input);
       setEntries((prev) => prev.map((e) => (e.archive_id === archiveId ? saved : e)));
-      setStatusMessage("기록이 수정되었습니다.");
     } else {
       const saved = await createArchiveEntry(input);
+      archiveId = saved.archive_id;
       setEntries((prev) => [...prev, saved]);
-      setStatusMessage("기록이 등록되었습니다.");
+    }
+
+    const month = parseArchiveMonth(input.date);
+    const failedSteps: string[] = [];
+
+    if (media.imageFile) {
+      try {
+        const blob = await prepareThumbnailForUpload(media.imageFile);
+        const existing = images.get(archiveId);
+        const savedImage = existing
+          ? await replaceArchiveImage({ existing, month, image: blob })
+          : await uploadArchiveImage({ archiveId, month, image: blob });
+        setImages((prev) => new Map(prev).set(archiveId, savedImage));
+      } catch {
+        failedSteps.push("대표 이미지 저장");
+      }
+    } else if (media.removeImage) {
+      const existing = images.get(archiveId);
+      if (existing) {
+        try {
+          await deleteArchiveImage(existing);
+          setImages((prev) => {
+            const next = new Map(prev);
+            next.delete(archiveId);
+            return next;
+          });
+        } catch {
+          failedSteps.push("대표 이미지 삭제");
+        }
+      }
+    }
+
+    const existingComment = comments.get(archiveId);
+    if (media.note) {
+      try {
+        const savedComment = existingComment
+          ? await updateArchiveComment(archiveId, media.note)
+          : await createArchiveComment(archiveId, media.note);
+        setComments((prev) => new Map(prev).set(archiveId, savedComment));
+      } catch {
+        failedSteps.push("MEMORY NOTE 저장");
+      }
+    } else if (existingComment) {
+      try {
+        await deleteArchiveComment(archiveId);
+        setComments((prev) => {
+          const next = new Map(prev);
+          next.delete(archiveId);
+          return next;
+        });
+      } catch {
+        failedSteps.push("MEMORY NOTE 삭제");
+      }
+    }
+
+    if (failedSteps.length > 0) {
+      setStatusMessage(
+        `기록은 저장됐지만 다음 처리에 실패했습니다: ${failedSteps.join(", ")}. 다시 [수정]에서 시도해주세요.`
+      );
+    } else {
+      setStatusMessage(isEdit ? "기록이 수정되었습니다." : "기록이 등록되었습니다.");
     }
   }
 
@@ -245,6 +323,8 @@ export default function ArchiveContent() {
         description: entry.description,
         tags: entry.tags,
       },
+      initialImage: images.get(archiveId) ?? null,
+      initialComment: comments.get(archiveId) ?? null,
     });
   }
 
@@ -340,6 +420,7 @@ export default function ArchiveContent() {
       <ConfirmDialog
         open={confirmDeleteEntryId !== null}
         message={deleteEntryMessage}
+        confirmLabel="기록 전체 삭제"
         isProcessing={isDeletingEntry}
         onConfirm={handleConfirmDeleteEntry}
         onCancel={() => {
