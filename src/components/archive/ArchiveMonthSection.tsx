@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { ArchiveMonth } from "@/data/archive";
-import type { ArchiveImage } from "@/lib/types";
+import type { ArchiveComment, ArchiveImage } from "@/lib/types";
 import ArchiveCard from "./ArchiveCard";
 import HiddenStar from "@/components/effects/HiddenStar";
 
@@ -12,8 +12,11 @@ interface ArchiveMonthSectionProps extends ArchiveMonth {
   isFirst: boolean;
   images: Map<string, ArchiveImage>;
   uploadingId: string | null;
+  comments: Map<string, ArchiveComment>;
   onAddPhoto: (archiveId: string) => void;
   onOpenPhoto: (archiveId: string) => void;
+  onSaveComment: (archiveId: string, text: string) => Promise<void>;
+  onDeleteComment: (archiveId: string) => Promise<void>;
 }
 
 export default function ArchiveMonthSection({
@@ -23,8 +26,11 @@ export default function ArchiveMonthSection({
   isFirst,
   images,
   uploadingId,
+  comments,
   onAddPhoto,
   onOpenPhoto,
+  onSaveComment,
+  onDeleteComment,
 }: ArchiveMonthSectionProps) {
   return (
     <section
@@ -57,8 +63,11 @@ export default function ArchiveMonthSection({
                 item={item}
                 image={images.get(item.id)}
                 isUploading={uploadingId === item.id}
+                comment={comments.get(item.id)}
                 onAddPhoto={() => onAddPhoto(item.id)}
                 onOpenPhoto={() => onOpenPhoto(item.id)}
+                onSaveComment={(text) => onSaveComment(item.id, text)}
+                onDeleteComment={() => onDeleteComment(item.id)}
               />
             ))}
           </div>

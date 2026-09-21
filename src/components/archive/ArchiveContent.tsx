@@ -2,13 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { ArchiveMonth } from "@/data/archive";
-import type { ArchiveImage } from "@/lib/types";
+import type { ArchiveComment, ArchiveImage } from "@/lib/types";
 import {
   deleteArchiveImage,
   fetchArchiveImages,
   replaceArchiveImage,
   uploadArchiveImage,
 } from "@/lib/archiveImages";
+import {
+  createArchiveComment,
+  deleteArchiveComment,
+  fetchArchiveComments,
+  updateArchiveComment,
+} from "@/lib/archiveComments";
 import { toErrorMessage } from "@/lib/letters";
 import { prepareThumbnailForUpload, validateImageFile } from "@/lib/imageProcessing";
 import ArchiveMonthSection from "./ArchiveMonthSection";
@@ -24,6 +30,7 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [viewingArchiveId, setViewingArchiveId] = useState<string | null>(null);
+  const [comments, setComments] = useState<Map<string, ArchiveComment>>(new Map());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingRef = useRef<{ archiveId: string; month: number } | null>(null);
@@ -48,6 +55,15 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
       .catch(() => {
         // 대표 이미지 조회 실패는 방송 기록 열람 자체를 막을 정도는 아니므로 조용히
         // 무시하고, 각 기록은 그냥 "사진 추가" 상태로 보인다.
+      });
+
+    fetchArchiveComments()
+      .then((map) => {
+        if (!cancelled) setComments(map);
+      })
+      .catch(() => {
+        // 코멘트 조회 실패도 마찬가지로 조용히 무시하고, 각 기록은 그냥
+        // "코멘트 추가" 상태로 보인다.
       });
 
     return () => {
@@ -115,6 +131,31 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
     setViewingArchiveId(null);
   }
 
+  /** 저장 성공 시 반환된 행으로 Map만 갱신한다 - 새로고침이나 refetch 없이 해당
+   * archive_id의 카드만 즉시 다시 그려지고, 스크롤 위치도 그대로 유지된다. */
+  async function handleSaveComment(archiveId: string, text: string): Promise<void> {
+    const existing = comments.get(archiveId);
+    const saved = existing
+      ? await updateArchiveComment(archiveId, text)
+      : await createArchiveComment(archiveId, text);
+
+    setComments((prev) => {
+      const next = new Map(prev);
+      next.set(archiveId, saved);
+      return next;
+    });
+  }
+
+  async function handleDeleteComment(archiveId: string): Promise<void> {
+    await deleteArchiveComment(archiveId);
+
+    setComments((prev) => {
+      const next = new Map(prev);
+      next.delete(archiveId);
+      return next;
+    });
+  }
+
   const viewingImage = viewingArchiveId ? (images.get(viewingArchiveId) ?? null) : null;
 
   return (
@@ -136,8 +177,11 @@ export default function ArchiveContent({ months }: ArchiveContentProps) {
           isFirst={i === 0}
           images={images}
           uploadingId={uploadingId}
+          comments={comments}
           onAddPhoto={requestPhoto}
           onOpenPhoto={setViewingArchiveId}
+          onSaveComment={handleSaveComment}
+          onDeleteComment={handleDeleteComment}
         />
       ))}
 

@@ -117,6 +117,18 @@ export interface ArchiveImage {
   updated_at: string;
 }
 
+/**
+ * Supabase archive_comments 테이블 한 행 ("그날의 기록 / MEMORY NOTE").
+ * src/data/archive.ts의 ArchiveItem.id와 archive_id로 1:1 연결된다(항목당 코멘트 1개).
+ */
+export interface ArchiveComment {
+  id: string;
+  archive_id: string;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Footer 등에서 쓰는 링크. href가 없으면(null) 클릭 불가능한 placeholder로 표시한다. */
 export interface FooterLink {
   label: string;
