@@ -516,6 +516,13 @@ export const archiveData: ArchiveMonth[] = [
         description: "아르마, 연습, 우왁굳 주최, 대회 진행, 레드팀",
         tags: ["대회"],
       },
+      {
+        id: "2026-08-31-seyi-dia-dira",
+        date: "08.31",
+        title: "세이·디아·디라와 공포게임 & 편의점 치우기",
+        description: "공포게임, 편의점 치우기",
+        tags: ["합방", "종겜"],
+      },
     ],
   },
 
