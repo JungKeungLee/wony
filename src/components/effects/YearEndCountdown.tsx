@@ -7,12 +7,12 @@ import { useHasMounted } from "@/lib/useHasMounted";
 
 /**
  * 목표 시각(KST, UTC+9). 실제 운영 시간으로 바꿀 때는 이 2개 상수만 원하는 날짜로
- * 바꾸면 된다 - 지금은 테스트용으로 2026-09-22 00:52~00:53(KST)에 맞춰져 있다.
+ * 바꾸면 된다 - 지금은 테스트용으로 2026-09-22 00:56~00:57(KST)에 맞춰져 있다.
  * URL에 ?countdownTest=true가 있으면 이 값 대신 페이지 진입 시점 기준의 짧은
  * 테스트 일정(TEST_* 상수)을 쓴다 - 아래 "테스트 모드" 부분 참고.
  */
-const COUNTDOWN_VISIBLE_FROM = new Date("2026-09-22T00:52:00+09:00").getTime();
-const COUNTDOWN_TARGET = new Date("2026-09-22T00:53:00+09:00").getTime();
+const COUNTDOWN_VISIBLE_FROM = new Date("2026-09-22T00:56:00+09:00").getTime();
+const COUNTDOWN_TARGET = new Date("2026-09-22T00:57:00+09:00").getTime();
 /** 마지막 10초 전체화면 연출은 항상 목표 시각 10초 전부터 시작한다. */
 const FINAL_TEN_START = COUNTDOWN_TARGET - 10_000;
 /** 큰 "HAPPY 2027" 연출을 몇 ms 동안 보여줄지. */
