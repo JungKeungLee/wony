@@ -19,6 +19,23 @@ export async function fetchArchiveComments(): Promise<Map<string, ArchiveComment
 }
 
 /**
+ * 특정 archive_id 하나의 "그날의 기록" 코멘트만 가져온다("랜덤 추억 열기"처럼 방송
+ * 기록 하나만 보여줄 때 전체 Map을 불러올 필요가 없다). 없으면 null.
+ */
+export async function fetchArchiveCommentById(archiveId: string): Promise<ArchiveComment | null> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { data, error } = await supabase
+    .from("archive_comments")
+    .select(ARCHIVE_COMMENT_COLUMNS)
+    .eq("archive_id", archiveId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as unknown as ArchiveComment) ?? null;
+}
+
+/**
  * 아직 코멘트가 없는 방송 기록에 새로 등록한다. 항목당 1개만 있어야 하므로
  * archive_id에 unique 제약이 걸려 있고, 그 규칙이 여기서도 지켜진다.
  */

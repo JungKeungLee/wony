@@ -25,6 +25,23 @@ export function getArchiveImageUrl(imagePath: string): string {
   return supabase.storage.from(ARCHIVE_IMAGE_BUCKET).getPublicUrl(imagePath).data.publicUrl;
 }
 
+/**
+ * 특정 archive_id 하나의 대표 이미지만 가져온다("랜덤 추억 열기"처럼 방송 기록
+ * 하나만 보여줄 때 전체 Map을 불러올 필요가 없다). 없으면 null.
+ */
+export async function fetchArchiveImageById(archiveId: string): Promise<ArchiveImage | null> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { data, error } = await supabase
+    .from("archive_images")
+    .select(ARCHIVE_IMAGE_COLUMNS)
+    .eq("archive_id", archiveId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return (data as unknown as ArchiveImage) ?? null;
+}
+
 function buildArchiveImagePath(month: number): string {
   const monthFolder = String(month).padStart(2, "0");
   return `2026/${monthFolder}/${crypto.randomUUID()}.webp`;
