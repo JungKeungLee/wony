@@ -5,6 +5,7 @@ import { StarCollectionProvider } from "@/context/StarCollectionContext";
 import StarField from "@/components/effects/StarField";
 import StarProgressBadge from "@/components/effects/StarProgressBadge";
 import StarUnlockCelebration from "@/components/effects/StarUnlockCelebration";
+import YearEndCountdown from "@/components/effects/YearEndCountdown";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Footer />
             <StarProgressBadge />
             <StarUnlockCelebration />
+            <YearEndCountdown />
           </StarCollectionProvider>
         </MusicProvider>
       </body>
