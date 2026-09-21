@@ -62,20 +62,21 @@ export type LetterInput = Pick<
   "nickname" | "content" | "message_2027" | "is_anonymous"
 >;
 
-/** Supabase fan_arts 테이블 한 행 */
+/**
+ * Supabase fan_arts 테이블 한 행. nickname/title/message는 더 이상 입력받지 않아 항상
+ * null로 저장되지만(신규 등록 기준), 과거에 값이 있던 기존 데이터를 위해 타입은
+ * nullable로 유지한다 - 화면에서는 어느 쪽이든 표시하지 않는다.
+ */
 export interface FanArt {
   id: string;
-  nickname: string;
-  title: string;
+  nickname: string | null;
+  title: string | null;
   message: string | null;
   /** Storage 객체 경로. 공개 URL은 getFanArtImageUrl()로 계산한다. */
   image_path: string;
   is_approved: boolean;
   created_at: string;
 }
-
-/** 팬아트 등록 시 클라이언트가 채우는 값 */
-export type FanArtInput = Pick<FanArt, "nickname" | "title" | "message" | "image_path">;
 
 /** 지원하는 영상 플랫폼. 새 플랫폼을 추가할 때 이 유니온에만 추가하면 된다. */
 export type VideoPlatform = "youtube" | "soop";

@@ -26,17 +26,16 @@ export function getFanArtImageUrl(imagePath: string): string {
 }
 
 interface UploadFanArtInput {
-  nickname: string;
-  title: string;
-  message: string | null;
   image: Blob;
   imageExtension: string;
 }
 
 /**
- * 이미지를 Storage에 업로드한 뒤 fan_arts 테이블에 metadata를 저장한다.
- * 별도 승인 절차 없이 is_approved = true로 저장해 즉시 공개하며,
- * 문제가 있는 작품은 관리자가 Supabase Dashboard에서 is_approved를 false로 내려 숨긴다.
+ * 이미지를 Storage에 업로드한 뒤 fan_arts 테이블에 행을 만든다. 더 이상 nickname/
+ * title/message를 입력받지 않으므로 항상 null로 저장한다(테이블의 해당 컬럼은
+ * nullable로 바꿔둔 상태여야 한다 - supabase/fan_arts_make_optional.sql 참고).
+ * 별도 승인 절차 없이 is_approved = true로 저장해 즉시 공개하며, 문제가 있는 작품은
+ * 관리자가 Supabase Dashboard에서 is_approved를 false로 내려 숨긴다.
  * DB insert가 실패하면 방금 올린 이미지를 정리 시도한다(10분 이내 파일만 삭제 가능한 정책과 맞물림).
  */
 export async function uploadFanArt(input: UploadFanArtInput): Promise<void> {
@@ -54,9 +53,9 @@ export async function uploadFanArt(input: UploadFanArtInput): Promise<void> {
 
   const { error: insertError } = await supabase.from("fan_arts").insert([
     {
-      nickname: input.nickname,
-      title: input.title,
-      message: input.message,
+      nickname: null,
+      title: null,
+      message: null,
       image_path: path,
       is_approved: true,
     },

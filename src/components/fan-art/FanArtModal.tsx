@@ -15,7 +15,7 @@ interface FanArtModalProps {
   onDeleted: (id: string) => void;
 }
 
-function ModalArtImage({ src, alt }: { src: string; alt: string }) {
+function ModalArtImage({ src }: { src: string }) {
   const [hasError, setHasError] = useState(false);
 
   if (hasError) {
@@ -33,20 +33,14 @@ function ModalArtImage({ src, alt }: { src: string; alt: string }) {
     // eslint-disable-next-line @next/next/no-img-element -- 원본 비율 그대로 보여주는 라이트박스라 next/image의 고정 크기 요구사항과 맞지 않음
     <img
       src={src}
-      alt={alt}
+      alt="팬아트"
       onError={() => setHasError(true)}
-      className="max-h-[60vh] max-w-full object-contain"
+      className="max-h-[75vh] max-w-full object-contain"
     />
   );
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
-
+/** 팬아트 확대 보기 - 이미지, 닫기, 이전/다음, 삭제만 있다(작성자/제목/메시지는 표시하지 않는다). */
 export default function FanArtModal({ arts, index, onClose, onNavigate, onDeleted }: FanArtModalProps) {
   const art = index !== null ? arts[index] : null;
 
@@ -156,39 +150,22 @@ export default function FanArtModal({ arts, index, onClose, onNavigate, onDelete
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
-            className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-y-auto border border-white/10 bg-bg-soft"
+            className="flex max-h-[85vh] max-w-3xl flex-col items-center"
           >
             <div className="flex items-center justify-center bg-black/30 p-4">
-              <ModalArtImage
-                key={art.image_path}
-                src={getFanArtImageUrl(art.image_path)}
-                alt={art.title}
-              />
+              <ModalArtImage key={art.image_path} src={getFanArtImageUrl(art.image_path)} />
             </div>
 
-            <div className="flex flex-col gap-2 px-6 py-6 sm:px-8">
-              <h3 className="font-serif-kr text-lg text-text sm:text-xl">{art.title}</h3>
-              <p className="text-xs tracking-[0.15em] text-star">
-                Artist / From. {art.nickname}
-              </p>
-              {art.message && (
-                <p className="font-serif-kr mt-3 whitespace-pre-wrap text-sm italic leading-relaxed text-pink/90 sm:text-base">
-                  {art.message}
-                </p>
-              )}
-              <p className="mt-4 text-xs text-text-soft/60">{formatDate(art.created_at)}</p>
+            {deleteError && <p className="mt-3 text-xs text-pink">{deleteError}</p>}
 
-              {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
-
-              <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setConfirmOpen(true)}
-                  className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
-                >
-                  팬아트 삭제
-                </button>
-              </div>
+            <div className="mt-4 flex justify-center border-t border-white/10 pt-4">
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(true)}
+                className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+              >
+                팬아트 삭제
+              </button>
             </div>
           </motion.div>
 

@@ -84,7 +84,7 @@ export default function FanArtGallery() {
 
   return (
     <>
-      <div className="mx-auto max-w-6xl columns-1 gap-5 px-6 pb-32 sm:columns-2 lg:columns-3">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 px-6 pb-32 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
         {arts.map((art, i) => (
           <FanArtCard
             key={art.id}
