@@ -524,6 +524,13 @@ export const archiveData: ArchiveMonth[] = [
         tags: ["대회"],
       },
       {
+        id: "2026-09-06-kkuhanseong-1st",
+        date: "09.06",
+        title: "꾸한성 1주년",
+        description: "꾸한성과 함께한 1년",
+        tags: ["꾸한성", "기념방송"],
+      },
+      {
         id: "2026-09-11",
         date: "09.11",
         title: "제초동 합류",
