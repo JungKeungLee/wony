@@ -6,13 +6,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useHasMounted } from "@/lib/useHasMounted";
 
 /**
- * 목표 시각(KST, UTC+9). 실제 운영 시간으로 바꿀 때는 이 2개 상수만 원하는 날짜로
- * 바꾸면 된다 - 지금은 테스트용으로 2026-09-22 00:56~00:57(KST)에 맞춰져 있다.
+ * 실제 운영 목표 시각(KST, UTC+9). 2026-12-31 23:30부터 작은 뱃지가 뜨고, 정각에
+ * "HAPPY 2027"이 재생된다. 값을 다시 바꿀 일이 생기면 이 2개 상수만 바꾸면 된다.
  * URL에 ?countdownTest=true가 있으면 이 값 대신 페이지 진입 시점 기준의 짧은
  * 테스트 일정(TEST_* 상수)을 쓴다 - 아래 "테스트 모드" 부분 참고.
  */
-const COUNTDOWN_VISIBLE_FROM = new Date("2026-09-22T00:56:00+09:00").getTime();
-const COUNTDOWN_TARGET = new Date("2026-09-22T00:57:00+09:00").getTime();
+const COUNTDOWN_VISIBLE_FROM = new Date("2026-12-31T23:30:00+09:00").getTime();
+const COUNTDOWN_TARGET = new Date("2027-01-01T00:00:00+09:00").getTime();
 /** 마지막 10초 전체화면 연출은 항상 목표 시각 10초 전부터 시작한다. */
 const FINAL_TEN_START = COUNTDOWN_TARGET - 10_000;
 /** 큰 "HAPPY 2027" 연출을 몇 ms 동안 보여줄지. */
@@ -22,7 +22,18 @@ const CELEBRATION_DURATION_MS = 5200;
 const TEST_COUNTDOWN_DURATION_MS = 15_000;
 const TEST_MODE_QUERY_KEY = "countdownTest";
 
-const SEEN_STORAGE_KEY = "wony-newyear-2027-seen";
+/**
+ * 운영 목표 시각을 여러 차례(00:41, 00:52, 00:56 KST 등) 테스트용으로 바꿔가며 실제
+ * 배포했던 이력이 있어, 그 기간에 사이트를 본 일반 방문자의 브라우저에는 "완료" 플래그가
+ * 이미 저장돼 있을 수 있다. 실제 운영 일정(2026-12-31 23:30 ~ 2027-01-01)으로 확정하면서
+ * 키 이름 자체를 새로 바꿔, 과거에 어떤 값이 저장돼 있었든 전부 무시하고 모든 사용자가
+ * 지금 이 실제 일정 기준으로 다시 시작하도록 한다(옛 키는 더 이상 읽지 않고, 아래에서
+ * 정리 차원으로 지워준다). 테스트 모드(?countdownTest=true)는 이 키를 읽지도 쓰지도
+ * 않으므로 운영 상태와 항상 완전히 분리된다.
+ */
+const SEEN_STORAGE_KEY = "wony-countdown-prod-2027";
+/** 테스트 기간 동안 실제로 쓰였던 옛 키. 새 키로 넘어오면서 정리용으로만 지운다. */
+const LEGACY_SEEN_STORAGE_KEYS = ["wony-newyear-2027-seen"];
 
 type Phase = "idle" | "small" | "finalTen" | "celebrating" | "after";
 
@@ -76,6 +87,16 @@ function writeAlreadySeen() {
   }
 }
 
+/** 예전 테스트 일정 때 실제로 쓰였던 옛 완료 플래그를 정리한다. 이제 읽지 않으므로
+ * 동작에는 영향이 없지만, 브라우저에 죽은 값이 남지 않도록 지워둔다. */
+function clearLegacySeenFlags() {
+  try {
+    for (const key of LEGACY_SEEN_STORAGE_KEYS) window.localStorage.removeItem(key);
+  } catch {
+    // 지우기 실패해도(시크릿 모드 등) 어차피 더 이상 읽지 않으므로 무해하다.
+  }
+}
+
 /**
  * 사이트 전역에 떠 있는 연말 카운트다운. 23:30부터 작은 뱃지로 남은 시간을 보여주고,
  * 마지막 10초는 화면 중앙에 크게, 자정이 되면 "HAPPY 2027"을 잠깐 띄운 뒤 자동으로
@@ -114,6 +135,7 @@ export default function YearEndCountdown() {
     // setTimeout으로 한 박자 늦춰서 호출한다 - 이 세션에서 자리잡은 패턴대로,
     // effect 본문에서 곧장 setState하지 않고 비동기 콜백 안에서만 한다.
     const timer = setTimeout(() => {
+      clearLegacySeenFlags();
       const testMode = new URLSearchParams(window.location.search).get(TEST_MODE_QUERY_KEY) === "true";
       setIsTestMode(testMode);
       if (testMode) setTestStart(Date.now());
