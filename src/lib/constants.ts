@@ -59,6 +59,12 @@ export const HERO_BACKGROUND_IMAGE: string | null = "/images/hero/main.png";
 export const HERO_IMAGE_FOCAL_POINT = "center";
 
 /**
+ * 사이트 첫 진입 오프닝 영상 경로("문자 도착 → 워니가 휴대폰을 확인" 장면만 담당).
+ * 파일이 없거나 재생에 실패해도 Intro는 스마트폰 단계로 자연스럽게 건너뛴다.
+ */
+export const INTRO_VIDEO_SRC = "/video/wony-intro.mp4";
+
+/**
  * 페이지별 배경음악 경로.
  * - DEFAULT_BGM_SRC: 일반 페이지(HOME/TIMELINE/ARCHIVE/STATISTICS/LETTER/FAN ART/VIDEO)
  * - SURPRISE_BGM_SRC: /surprise 전용

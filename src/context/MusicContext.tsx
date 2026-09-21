@@ -38,6 +38,13 @@ interface MusicContextValue {
   duckVolume: (factor: number) => void;
   /** duckVolume으로 낮췄던 소리를 사용자의 실제 볼륨 설정값으로 되돌린다. */
   restoreVolume: () => void;
+  /**
+   * Intro의 WONY 앱 클릭처럼 명확한 사용자 인터랙션 시점에, 아직 재생 중이 아니라면
+   * 재생을 시도한다(브라우저 autoplay 정책으로 막혀 있던 경우를 이 시점에 풀어준다).
+   * 이미 재생 중이면 아무 것도 하지 않고, 사용자가 MUSIC OFF를 선택했다면 절대
+   * 강제로 켜지 않는다.
+   */
+  ensurePlayback: () => void;
 }
 
 const MusicContext = createContext<MusicContextValue | null>(null);
@@ -207,6 +214,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       .catch(() => {
         // 재생이 거부되면 조용히 무시한다. 사용자가 MUSIC ON을 다시 누르면 된다.
       });
+  }, [getActiveAudio]);
+
+  const ensurePlayback = useCallback(() => {
+    if (readPlayPreference() === "off") return;
+    const audio = getActiveAudio();
+    if (!audio || !audio.paused) return;
+    audio.volume = volumeRef.current;
+    playWhenReady(audio, (success) => {
+      if (success) {
+        setIsPlaying(true);
+        writePlayPreference("on");
+      }
+    });
   }, [getActiveAudio]);
 
   const duckVolume = useCallback(
@@ -405,8 +425,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       resumeForOverlay,
       duckVolume,
       restoreVolume,
+      ensurePlayback,
     }),
-    [isPlaying, toggleMusic, volume, setVolume, pauseForOverlay, resumeForOverlay, duckVolume, restoreVolume]
+    [
+      isPlaying,
+      toggleMusic,
+      volume,
+      setVolume,
+      pauseForOverlay,
+      resumeForOverlay,
+      duckVolume,
+      restoreVolume,
+      ensurePlayback,
+    ]
   );
 
   return (
