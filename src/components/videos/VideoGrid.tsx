@@ -30,6 +30,15 @@ export default function VideoGrid() {
     setStatusMessage("영상이 삭제되었습니다.");
   }
 
+  /** 수정 저장 성공 시 해당 영상만 새 값으로 교체한다 - 목록 전체를 다시 불러오지
+   * 않고, 지금 열려 있는 상세 Modal의 내용도 바로 최신 값으로 갱신한다. */
+  function handleVideoUpdated(updated: VideoItem) {
+    setVideos((prev) => prev.map((v) => (v.id === updated.id ? updated : v)));
+    setModalList((prev) => prev.map((v) => (v.id === updated.id ? updated : v)));
+    setActiveVideo((prev) => (prev && prev.id === updated.id ? updated : prev));
+    setStatusMessage("영상이 수정되었습니다.");
+  }
+
   useEffect(() => {
     let cancelled = false;
 
@@ -196,6 +205,7 @@ export default function VideoGrid() {
         onClose={() => setActiveVideo(null)}
         onNavigate={(i) => setActiveVideo(modalList[i] ?? null)}
         onDeleted={handleVideoDeleted}
+        onUpdated={handleVideoUpdated}
       />
       <StatusToast message={statusMessage} onDismiss={() => setStatusMessage(null)} />
     </>

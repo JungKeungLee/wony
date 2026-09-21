@@ -13,6 +13,7 @@ import { getCategoryLabel } from "@/lib/videoCategory";
 import { deleteVideo } from "@/lib/videos";
 import type { VideoItem } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import VideoEditForm from "./VideoEditForm";
 import { useMusic } from "@/context/MusicContext";
 
 interface VideoModalProps {
@@ -21,6 +22,7 @@ interface VideoModalProps {
   onClose: () => void;
   onNavigate: (index: number) => void;
   onDeleted: (id: string) => void;
+  onUpdated: (updated: VideoItem) => void;
 }
 
 function formatDate(iso: string): string {
@@ -74,7 +76,7 @@ function VideoFrame({ video }: { video: VideoItem }) {
   );
 }
 
-export default function VideoModal({ videos, index, onClose, onNavigate, onDeleted }: VideoModalProps) {
+export default function VideoModal({ videos, index, onClose, onNavigate, onDeleted, onUpdated }: VideoModalProps) {
   const video = index !== null ? videos[index] : null;
   const isOpen = video !== null;
 
@@ -82,6 +84,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [editingVideo, setEditingVideo] = useState<VideoItem | null>(null);
 
   // 영상 재생 중에는 BGM을 잠시 멈추고, Modal을 닫으면 (사용자가 그 사이 직접 MUSIC OFF를
   // 누르지 않은 이상) 원래대로 되돌린다. prev/next로 다른 영상으로 넘어갈 때는 계속 열려
@@ -103,7 +106,13 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
   function navigate(nextIndex: number) {
     setConfirmOpen(false);
     setDeleteError("");
+    setEditingVideo(null);
     onNavigate(nextIndex);
+  }
+
+  function handleSaved(updated: VideoItem) {
+    setEditingVideo(null);
+    onUpdated(updated);
   }
 
   async function handleConfirmDelete() {
@@ -222,7 +231,14 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
 
               {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
 
-              <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
+              <div className="mt-4 flex justify-end gap-3 border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingVideo(video)}
+                  className="border border-white/15 px-4 py-1.5 text-[11px] tracking-[0.15em] text-text-soft transition-colors hover:border-star hover:text-star"
+                >
+                  영상 수정
+                </button>
                 <button
                   type="button"
                   onClick={() => setConfirmOpen(true)}
@@ -250,6 +266,8 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
       onConfirm={handleConfirmDelete}
       onCancel={() => setConfirmOpen(false)}
     />
+
+    <VideoEditForm video={editingVideo} onSaved={handleSaved} onClose={() => setEditingVideo(null)} />
     </>
   );
 }

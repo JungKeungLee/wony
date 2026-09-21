@@ -47,6 +47,35 @@ export async function submitVideo(input: VideoInput): Promise<void> {
 }
 
 /**
+ * 영상을 수정한다(제목/URL/플랫폼/월/카테고리/대표 썸네일). nickname/message/
+ * best_rank/is_approved는 건드리지 않는다 - best_rank는 DB 트리거로도 한 번 더
+ * 보호되어 있어(protect_videos_best_rank) 여기서 값을 보내더라도 무시된다.
+ * RLS가 조건에 안 맞는 행을 조용히 0건 처리할 수 있으므로, 실제로 수정된 행이
+ * 있는지(.select())로 성공 여부를 판단한다.
+ */
+export async function updateVideo(id: string, input: VideoInput): Promise<VideoItem> {
+  if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
+
+  const { data, error } = await supabase
+    .from("videos")
+    .update({
+      title: input.title,
+      platform: input.platform,
+      video_url: input.video_url,
+      video_id: input.video_id,
+      month: input.month,
+      category: input.category,
+      thumbnail_path: input.thumbnail_path,
+    })
+    .eq("id", id)
+    .select(VIDEO_COLUMNS)
+    .single();
+
+  if (error || !data) throw error ?? new Error("영상을 수정하지 못했습니다.");
+  return data as unknown as VideoItem;
+}
+
+/**
  * 영상을 삭제한다. 삭제 전 확인은 호출하는 쪽(UI)에서 처리한다.
  * RLS 정책에 막혀 0개 행이 삭제된 경우 Supabase는 에러 없이 빈 결과를 반환하므로,
  * 삭제된 행이 실제로 있는지 select("id")로 직접 확인해 "성공처럼 보이는 실패"를 막는다.
