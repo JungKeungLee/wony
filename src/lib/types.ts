@@ -98,6 +98,14 @@ export interface VideoItem {
   category: VideoCategory;
   /** null = 일반 클립, 1~3 = 2026 BEST #1~#3. 관리자가 Dashboard에서만 설정한다. */
   best_rank: number | null;
+  /**
+   * Storage(video-thumbnails 버킷)에 저장된 대표 썸네일 객체 경로. SOOP처럼
+   * platform 기준으로 썸네일 URL을 바로 계산할 수 없는 영상에서만 채워진다(등록
+   * 시점에 자동 추출되거나, 실패 시 사용자가 직접 올린 이미지). null이면 화면에서
+   * getVideoThumbnail(platform, video_id) 기준으로 계산한 기존 방식으로 자연히
+   * 폴백한다. 공개 URL은 getVideoThumbnailUrl()로 계산한다.
+   */
+  thumbnail_path: string | null;
   is_approved: boolean;
   created_at: string;
 }
@@ -105,11 +113,12 @@ export interface VideoItem {
 /**
  * 영상 등록 시 클라이언트가 채우는 값. nickname/message는 더 이상 화면에서 입력받지
  * 않으므로 여기 포함하지 않는다(실제 INSERT 시 lib/videos.ts가 내부적으로 채운다).
- * best_rank도 폼에 노출하지 않고 관리자가 별도로 설정한다.
+ * best_rank도 폼에 노출하지 않고 관리자가 별도로 설정한다. thumbnail_path는 폼이
+ * (자동 추출 또는 수동 업로드로) 직접 계산해서 넘긴다 - 없으면 null.
  */
 export type VideoInput = Pick<
   VideoItem,
-  "title" | "platform" | "video_url" | "video_id" | "month" | "category"
+  "title" | "platform" | "video_url" | "video_id" | "month" | "category" | "thumbnail_path"
 >;
 
 /** Supabase archive_images 테이블 한 행. src/data/archive.ts의 ArchiveItem.id와 archive_id로 연결된다. */

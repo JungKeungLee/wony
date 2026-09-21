@@ -1,4 +1,5 @@
-import type { VideoPlatform } from "./types";
+import type { VideoItem, VideoPlatform } from "./types";
+import { getVideoThumbnailUrl } from "./videoThumbnails";
 
 interface ParsedVideoUrl {
   platform: VideoPlatform;
@@ -67,6 +68,17 @@ export function getPlatformLabel(platform: VideoPlatform): string {
 export function getVideoThumbnail(platform: VideoPlatform, videoId: string): string | null {
   if (platform === "youtube") return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   return null;
+}
+
+/**
+ * 카드/모달에서 실제로 써야 할 썸네일 URL. thumbnail_path(등록 시 자동 추출되었거나
+ * 사용자가 직접 올린 대표 이미지)가 있으면 그걸 우선하고, 없으면 기존처럼
+ * getVideoThumbnail()의 platform 기준 규칙(YouTube만 가능)으로 계산한다.
+ * 둘 다 없으면 null - 화면에서는 기존과 동일하게 공통 placeholder를 보여준다.
+ */
+export function resolveVideoThumbnail(video: Pick<VideoItem, "platform" | "video_id" | "thumbnail_path">): string | null {
+  if (video.thumbnail_path) return getVideoThumbnailUrl(video.thumbnail_path);
+  return getVideoThumbnail(video.platform, video.video_id);
 }
 
 /**

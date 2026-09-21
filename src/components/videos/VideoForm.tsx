@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { submitVideo } from "@/lib/videos";
 import { toErrorMessage } from "@/lib/letters";
 import { getMissingSupabaseEnvVars, isSupabaseConfigured } from "@/lib/supabase";
 import { getPlatformLabel, parseVideoUrl } from "@/lib/videoPlatform";
 import { VIDEO_CATEGORIES, getCategoryLabel } from "@/lib/videoCategory";
+import { validateImageFile, prepareThumbnailForUpload } from "@/lib/imageProcessing";
+import { uploadVideoThumbnail } from "@/lib/videoThumbnails";
 import type { VideoCategory, VideoPlatform } from "@/lib/types";
 
 const MAX_TITLE = 100;
@@ -16,6 +19,7 @@ interface FieldErrors {
   url?: string;
   month?: string;
   category?: string;
+  thumbnail?: string;
 }
 
 export default function VideoForm() {
@@ -23,11 +27,13 @@ export default function VideoForm() {
   const [url, setUrl] = useState("");
   const [month, setMonth] = useState("");
   const [category, setCategory] = useState<VideoCategory | "">("");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitState, setSubmitState] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [submitError, setSubmitError] = useState("");
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const parsed = url.trim() ? parseVideoUrl(url) : null;
   const urlRecognitionMessage = !url.trim()
@@ -35,6 +41,18 @@ export default function VideoForm() {
     : parsed
       ? getPlatformLabel(parsed.platform)
       : "현재 YouTube와 SOOP 영상만 등록할 수 있습니다.";
+
+  const thumbnailPreviewUrl = useMemo(
+    () => (thumbnailFile ? URL.createObjectURL(thumbnailFile) : null),
+    [thumbnailFile]
+  );
+
+  // thumbnailPreviewUrl(useMemo)이 새로 만들어지거나 폼이 사라질 때 이전 URL을
+  // 해제한다. setState는 하지 않는다(ArchiveEntryForm과 동일한 패턴).
+  useEffect(() => {
+    if (!thumbnailPreviewUrl) return;
+    return () => URL.revokeObjectURL(thumbnailPreviewUrl);
+  }, [thumbnailPreviewUrl]);
 
   function validate(): boolean {
     const next: FieldErrors = {};
@@ -54,12 +72,59 @@ export default function VideoForm() {
     return Object.keys(next).length === 0;
   }
 
+  function handleThumbnailPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setErrors((prev) => ({ ...prev, thumbnail: validationError }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, thumbnail: undefined }));
+    setThumbnailFile(file);
+  }
+
+  /**
+   * 대표 썸네일 경로를 정한다. 사용자가 직접 이미지를 골랐으면 그걸 그대로
+   * 업로드해서 쓰고, SOOP인데 직접 고른 이미지가 없으면 서버에서 og:image 자동
+   * 추출을 시도한다(YouTube는 이미 hqdefault.jpg로 충분해 시도하지 않는다).
+   * 어느 쪽이든 실패해도 조용히 null을 반환해 영상 등록 자체는 막지 않는다.
+   */
+  async function resolveThumbnailPath(platform: VideoPlatform, videoId: string): Promise<string | null> {
+    if (thumbnailFile) {
+      try {
+        const blob = await prepareThumbnailForUpload(thumbnailFile);
+        return await uploadVideoThumbnail(blob);
+      } catch {
+        return null;
+      }
+    }
+
+    if (platform !== "soop") return null;
+
+    try {
+      const res = await fetch("/api/soop-thumbnail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId }),
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as { thumbnailPath: string | null };
+      return data.thumbnailPath;
+    } catch {
+      return null;
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!validate() || !parsed || !category) return;
 
     setSubmitState("submitting");
     try {
+      const thumbnailPath = await resolveThumbnailPath(parsed.platform as VideoPlatform, parsed.videoId);
       await submitVideo({
         title: title.trim(),
         platform: parsed.platform as VideoPlatform,
@@ -67,6 +132,7 @@ export default function VideoForm() {
         video_id: parsed.videoId,
         month: Number(month),
         category,
+        thumbnail_path: thumbnailPath,
       });
       setSubmitState("success");
     } catch (err) {
@@ -149,6 +215,45 @@ export default function VideoForm() {
         )}
         {errors.url && <p className="text-xs text-pink">{errors.url}</p>}
       </div>
+
+      {parsed?.platform === "soop" && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs tracking-[0.2em] text-text-soft">
+            대표 썸네일 (선택)
+          </span>
+          <p className="text-[11px] leading-relaxed text-text-soft/60">
+            비워두면 등록 시 SOOP 페이지에서 자동으로 가져옵니다. 잘 안 될 때만
+            직접 올려주세요.
+          </p>
+          <input
+            ref={thumbnailInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleThumbnailPick}
+            className="sr-only"
+          />
+          {thumbnailPreviewUrl && (
+            <div className="relative aspect-video w-full max-w-[220px] overflow-hidden border border-white/10 bg-bg">
+              <Image
+                src={thumbnailPreviewUrl}
+                alt="썸네일 미리보기"
+                fill
+                sizes="220px"
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => thumbnailInputRef.current?.click()}
+            className="w-fit border border-white/15 px-3 py-1.5 text-[11px] tracking-[0.1em] text-text-soft transition-colors hover:border-pink hover:text-pink"
+          >
+            {thumbnailFile ? "[ 이미지 다시 선택 ]" : "[ 이미지 선택 ]"}
+          </button>
+          {errors.thumbnail && <p className="text-xs text-pink">{errors.thumbnail}</p>}
+        </div>
+      )}
 
       <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
         <div className="flex flex-1 flex-col gap-2">

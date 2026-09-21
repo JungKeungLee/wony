@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { getPlatformBadge, getVideoThumbnail } from "@/lib/videoPlatform";
+import { getPlatformBadge, resolveVideoThumbnail } from "@/lib/videoPlatform";
 import { getCategoryLabel } from "@/lib/videoCategory";
 import type { VideoItem } from "@/lib/types";
 
@@ -14,7 +14,7 @@ interface VideoCardProps {
 
 export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) {
   const [hasError, setHasError] = useState(false);
-  const thumbnail = getVideoThumbnail(video.platform, video.video_id);
+  const thumbnail = resolveVideoThumbnail(video);
 
   return (
     <motion.button

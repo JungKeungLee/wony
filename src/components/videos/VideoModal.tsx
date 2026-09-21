@@ -5,9 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   getPlatformBadge,
   getVideoEmbedUrl,
-  getVideoThumbnail,
   getVideoWatchUrl,
   getWatchButtonLabel,
+  resolveVideoThumbnail,
 } from "@/lib/videoPlatform";
 import { getCategoryLabel } from "@/lib/videoCategory";
 import { deleteVideo } from "@/lib/videos";
@@ -46,7 +46,7 @@ function VideoFrame({ video }: { video: VideoItem }) {
     );
   }
 
-  const thumbnail = getVideoThumbnail(video.platform, video.video_id);
+  const thumbnail = resolveVideoThumbnail(video);
   const watchUrl = getVideoWatchUrl(video.platform, video.video_id);
 
   return (
