@@ -9,7 +9,7 @@ import { useHasMounted } from "@/lib/useHasMounted";
  * 목표 시각(KST, UTC+9). 실제 배포 전 이 3개 상수만 원하는 날짜로 바꾸면 된다 -
  * 지금은 2026-09-22 00:00:00(KST)을 기준으로 맞춰져 있다(요청 시점 기준 테스트용 값).
  */
-const SMALL_COUNTDOWN_START = new Date("2026-09-21T23:30:00+09:00").getTime();
+const SMALL_COUNTDOWN_START = new Date("2026-09-21T23:15:00+09:00").getTime();
 const FINAL_TEN_START = new Date("2026-09-21T23:59:50+09:00").getTime();
 const TARGET_TIME = new Date("2026-09-22T00:00:00+09:00").getTime();
 /** 큰 "HAPPY 2027" 연출을 몇 ms 동안 보여줄지. */
