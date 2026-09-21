@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 /** 최초 진입 후 자동 스크롤이 시작되기까지 대기 시간. */
 const START_DELAY_MS = 2500;
 /** 영화 엔딩 크레딧처럼 느린 속도(px/s). */
-const SPEED_PX_PER_SEC = 40;
+const SPEED_PX_PER_SEC = 60;
 
 export type AutoScrollState = "pending" | "running" | "paused" | "stopped";
 
