@@ -6,12 +6,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useHasMounted } from "@/lib/useHasMounted";
 
 /**
- * 목표 시각(KST, UTC+9). 실제 배포 전 이 3개 상수만 원하는 날짜로 바꾸면 된다 -
- * 지금은 2026-09-22 00:00:00(KST)을 기준으로 맞춰져 있다(요청 시점 기준 테스트용 값).
+ * 목표 시각(KST, UTC+9). 실제 운영 시간으로 바꿀 때는 이 2개 상수만 원하는 날짜로
+ * 바꾸면 된다 - 지금은 테스트용으로 2026-09-22 00:38~00:39(KST)에 맞춰져 있다.
  */
-const SMALL_COUNTDOWN_START = new Date("2026-09-21T23:15:00+09:00").getTime();
-const FINAL_TEN_START = new Date("2026-09-21T23:59:50+09:00").getTime();
-const TARGET_TIME = new Date("2026-09-22T00:00:00+09:00").getTime();
+const COUNTDOWN_VISIBLE_FROM = new Date("2026-09-22T00:41:00+09:00").getTime();
+const COUNTDOWN_TARGET = new Date("2026-09-22T00:42:00+09:00").getTime();
+/** 마지막 10초 전체화면 연출은 항상 목표 시각 10초 전부터 시작한다. */
+const FINAL_TEN_START = COUNTDOWN_TARGET - 10_000;
 /** 큰 "HAPPY 2027" 연출을 몇 ms 동안 보여줄지. */
 const CELEBRATION_DURATION_MS = 5200;
 
@@ -20,10 +21,10 @@ const SEEN_STORAGE_KEY = "wony-newyear-2027-seen";
 type Phase = "idle" | "small" | "finalTen" | "celebrating" | "after";
 
 function computePhase(now: number, alreadySeen: boolean): Phase {
-  if (now < SMALL_COUNTDOWN_START) return "idle";
+  if (now < COUNTDOWN_VISIBLE_FROM) return "idle";
   if (now < FINAL_TEN_START) return "small";
-  if (now < TARGET_TIME) return "finalTen";
-  if (!alreadySeen && now < TARGET_TIME + CELEBRATION_DURATION_MS) return "celebrating";
+  if (now < COUNTDOWN_TARGET) return "finalTen";
+  if (!alreadySeen && now < COUNTDOWN_TARGET + CELEBRATION_DURATION_MS) return "celebrating";
   return "after";
 }
 
@@ -113,7 +114,7 @@ export default function YearEndCountdown() {
   if (phase === "idle" || now === null) return null;
 
   const isSurprisePage = pathname === "/surprise";
-  const remainingMs = TARGET_TIME - now;
+  const remainingMs = COUNTDOWN_TARGET - now;
 
   return (
     <>
