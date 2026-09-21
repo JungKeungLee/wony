@@ -12,6 +12,9 @@ interface ArchiveCardProps {
   onOpenPhoto: () => void;
   onSaveComment: (text: string) => Promise<void>;
   onDeleteComment: () => Promise<void>;
+  /** 제작용 기록 수정/삭제. */
+  onEditEntry: () => void;
+  onDeleteEntry: () => void;
 }
 
 export default function ArchiveCard({
@@ -23,6 +26,8 @@ export default function ArchiveCard({
   onOpenPhoto,
   onSaveComment,
   onDeleteComment,
+  onEditEntry,
+  onDeleteEntry,
 }: ArchiveCardProps) {
   return (
     <div className="flex flex-col gap-3 border-b border-white/10 py-5 sm:py-6">
@@ -69,6 +74,24 @@ export default function ArchiveCard({
       </div>
 
       <ArchiveMemoryNote comment={comment} onSave={onSaveComment} onDelete={onDeleteComment} />
+
+      {/* 제작용 기록 수정/삭제 - 눈에 띄지 않도록 아주 작고 옅게 둔다. */}
+      <div className="flex justify-end gap-3 pt-1">
+        <button
+          type="button"
+          onClick={onEditEntry}
+          className="text-[10px] tracking-[0.1em] text-text-soft/40 transition-colors hover:text-star"
+        >
+          [ 수정 ]
+        </button>
+        <button
+          type="button"
+          onClick={onDeleteEntry}
+          className="text-[10px] tracking-[0.1em] text-text-soft/40 transition-colors hover:text-pink"
+        >
+          [ 삭제 ]
+        </button>
+      </div>
     </div>
   );
 }

@@ -3,37 +3,52 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { archiveData, type ArchiveItem } from "@/data/archive";
+import type { ArchiveItem } from "@/data/archive";
 import { fetchArchiveImageById, getArchiveImageUrl } from "@/lib/archiveImages";
 import { fetchArchiveCommentById } from "@/lib/archiveComments";
+import { archiveEntryToItem, fetchArchiveEntries } from "@/lib/archiveEntries";
 import type { ArchiveComment, ArchiveImage } from "@/lib/types";
 
-const ALL_MEMORIES: ArchiveItem[] = archiveData.flatMap((month) => month.items);
-
-function pickRandomIndex(excludeIndex: number | null): number {
-  if (ALL_MEMORIES.length <= 1) return 0;
-  let next = Math.floor(Math.random() * ALL_MEMORIES.length);
+function pickRandomIndex(length: number, excludeIndex: number | null): number {
+  if (length <= 1) return 0;
+  let next = Math.floor(Math.random() * length);
   while (next === excludeIndex) {
-    next = Math.floor(Math.random() * ALL_MEMORIES.length);
+    next = Math.floor(Math.random() * length);
   }
   return next;
 }
 
 /**
- * HOME 페이지의 작은 "기억 상자". ARCHIVE의 기존 정적 데이터(date/title/description/
- * tags)와, 있다면 Supabase의 대표 이미지 / MEMORY NOTE를 archive_id 기준으로 함께
- * 불러와 무작위로 하나씩 열어본다. ARCHIVE 자체의 정렬/필터/데이터는 전혀 건드리지
- * 않는다 - 읽기 전용으로 재활용만 한다.
+ * HOME 페이지의 작은 "기억 상자". ARCHIVE의 실시간 데이터(date/title/description/tags,
+ * Supabase archive_entries)와, 있다면 대표 이미지 / MEMORY NOTE를 archive_id 기준으로
+ * 함께 불러와 무작위로 하나씩 열어본다. archive_entries를 직접 등록/수정/삭제해도 이
+ * 목록이 항상 최신 상태를 반영하도록 정적 데이터 대신 Supabase에서 가져온다.
+ * ARCHIVE 자체의 정렬/필터/데이터는 전혀 건드리지 않는다 - 읽기 전용으로 재활용만 한다.
  */
 export default function RandomMemoryTeaser() {
+  const [memories, setMemories] = useState<ArchiveItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [index, setIndex] = useState<number | null>(null);
   const [image, setImage] = useState<ArchiveImage | null>(null);
   const [comment, setComment] = useState<ArchiveComment | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetchArchiveEntries()
+      .then((rows) => {
+        if (!cancelled) setMemories(rows.map(archiveEntryToItem));
+      })
+      .catch(() => {
+        // 목록을 못 불러오면 버튼이 그냥 비활성 상태로 남는다.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function openMemory(nextIndex: number) {
-    const item = ALL_MEMORIES[nextIndex];
+    const item = memories[nextIndex];
     setIndex(nextIndex);
     setIsOpen(true);
     setIsLoading(true);
@@ -52,7 +67,8 @@ export default function RandomMemoryTeaser() {
   }
 
   function handleOpenRandom() {
-    openMemory(pickRandomIndex(index));
+    if (memories.length === 0) return;
+    openMemory(pickRandomIndex(memories.length, index));
   }
 
   function closeModal() {
@@ -73,14 +89,15 @@ export default function RandomMemoryTeaser() {
     };
   }, [isOpen]);
 
-  const item = index !== null ? ALL_MEMORIES[index] : null;
+  const item = index !== null ? memories[index] : null;
 
   return (
     <section className="mx-auto max-w-5xl px-6 pb-20 text-center">
       <button
         type="button"
         onClick={handleOpenRandom}
-        className="group mx-auto flex flex-col items-center gap-2 border border-white/10 bg-bg-soft/40 px-10 py-7 transition-colors hover:border-star/40 hover:bg-bg-soft/70"
+        disabled={memories.length === 0}
+        className="group mx-auto flex flex-col items-center gap-2 border border-white/10 bg-bg-soft/40 px-10 py-7 transition-colors hover:border-star/40 hover:bg-bg-soft/70 disabled:cursor-not-allowed disabled:opacity-40"
       >
         <span
           aria-hidden

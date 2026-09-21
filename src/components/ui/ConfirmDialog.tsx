@@ -39,7 +39,7 @@ export default function ConfirmDialog({
             onClick={(e) => e.stopPropagation()}
             className="flex w-full max-w-xs flex-col gap-6 border border-white/15 bg-bg-soft px-6 py-7 text-center"
           >
-            <p className="font-serif-kr text-sm leading-relaxed text-text sm:text-base">
+            <p className="font-serif-kr whitespace-pre-line text-sm leading-relaxed text-text sm:text-base">
               {message}
             </p>
             <div className="flex justify-center gap-3">

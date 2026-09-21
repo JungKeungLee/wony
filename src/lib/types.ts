@@ -130,6 +130,31 @@ export interface ArchiveComment {
   updated_at: string;
 }
 
+/**
+ * Supabase archive_entries 테이블 한 행. ARCHIVE의 기본 데이터(날짜/메인주제/서브주제/
+ * 해시태그)를 담는다 - src/data/archive.ts의 정적 배열을 대체하는 실시간 소스다.
+ * archive_id는 archive_images/archive_comments와 동일한 값으로 계속 연결되므로
+ * 절대 바꾸지 않는다(수정 가능한 값은 date/title/description/tags뿐).
+ */
+export interface ArchiveEntryRow {
+  id: string;
+  archive_id: string;
+  date: string;
+  title: string;
+  description: string | null;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+/** ARCHIVE 기록 등록/수정 시 클라이언트가 채우는 값. archive_id는 서버(클라이언트 코드)가 자동 생성한다. */
+export interface ArchiveEntryInput {
+  date: string;
+  title: string;
+  description: string | null;
+  tags: string[];
+}
+
 /** Footer 등에서 쓰는 링크. href가 없으면(null) 클릭 불가능한 placeholder로 표시한다. */
 export interface FooterLink {
   label: string;

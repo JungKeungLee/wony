@@ -17,6 +17,8 @@ interface ArchiveMonthSectionProps extends ArchiveMonth {
   onOpenPhoto: (archiveId: string) => void;
   onSaveComment: (archiveId: string, text: string) => Promise<void>;
   onDeleteComment: (archiveId: string) => Promise<void>;
+  onEditEntry: (archiveId: string) => void;
+  onDeleteEntry: (archiveId: string) => void;
 }
 
 export default function ArchiveMonthSection({
@@ -31,6 +33,8 @@ export default function ArchiveMonthSection({
   onOpenPhoto,
   onSaveComment,
   onDeleteComment,
+  onEditEntry,
+  onDeleteEntry,
 }: ArchiveMonthSectionProps) {
   return (
     <section
@@ -68,6 +72,8 @@ export default function ArchiveMonthSection({
                 onOpenPhoto={() => onOpenPhoto(item.id)}
                 onSaveComment={(text) => onSaveComment(item.id, text)}
                 onDeleteComment={() => onDeleteComment(item.id)}
+                onEditEntry={() => onEditEntry(item.id)}
+                onDeleteEntry={() => onDeleteEntry(item.id)}
               />
             ))}
           </div>
