@@ -68,7 +68,6 @@ export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) 
         <p className="font-serif-kr truncate text-sm text-text sm:text-base">
           {video.title}
         </p>
-        <p className="text-xs text-text-soft">From. {video.nickname}</p>
       </div>
     </motion.button>
   );

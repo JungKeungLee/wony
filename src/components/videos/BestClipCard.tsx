@@ -74,7 +74,6 @@ export default function BestClipCard({ video, rank, onOpen }: BestClipCardProps)
         <p className={`font-serif-kr text-text ${isLarge ? "text-lg sm:text-2xl" : "text-sm sm:text-base"}`}>
           {video.title}
         </p>
-        <p className="text-xs text-text-soft">From. {video.nickname}</p>
       </div>
     </motion.button>
   );

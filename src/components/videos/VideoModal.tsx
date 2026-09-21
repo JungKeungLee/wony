@@ -218,13 +218,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
                 )}
               </div>
               <h3 className="font-serif-kr text-lg text-text sm:text-xl">{video.title}</h3>
-              <p className="text-xs tracking-[0.15em] text-star">From. {video.nickname}</p>
-              {video.message && (
-                <p className="font-serif-kr mt-3 whitespace-pre-wrap text-sm italic leading-relaxed text-pink/90 sm:text-base">
-                  {video.message}
-                </p>
-              )}
-              <p className="mt-4 text-xs text-text-soft/60">{formatDate(video.created_at)}</p>
+              <p className="mt-1 text-xs text-text-soft/60">{formatDate(video.created_at)}</p>
 
               {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
 

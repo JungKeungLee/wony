@@ -9,24 +9,18 @@ import { getPlatformLabel, parseVideoUrl } from "@/lib/videoPlatform";
 import { VIDEO_CATEGORIES, getCategoryLabel } from "@/lib/videoCategory";
 import type { VideoCategory, VideoPlatform } from "@/lib/types";
 
-const MAX_NICKNAME = 30;
 const MAX_TITLE = 100;
-const MAX_MESSAGE = 300;
 
 interface FieldErrors {
-  nickname?: string;
   title?: string;
   url?: string;
-  message?: string;
   month?: string;
   category?: string;
 }
 
 export default function VideoForm() {
-  const [nickname, setNickname] = useState("");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [message, setMessage] = useState("");
   const [month, setMonth] = useState("");
   const [category, setCategory] = useState<VideoCategory | "">("");
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -44,13 +38,7 @@ export default function VideoForm() {
 
   function validate(): boolean {
     const next: FieldErrors = {};
-    const trimmedNickname = nickname.trim();
     const trimmedTitle = title.trim();
-    const trimmedMessage = message.trim();
-
-    if (!trimmedNickname) next.nickname = "닉네임을 입력해주세요.";
-    else if (trimmedNickname.length > MAX_NICKNAME)
-      next.nickname = `닉네임은 ${MAX_NICKNAME}자 이내로 입력해주세요.`;
 
     if (!trimmedTitle) next.title = "제목을 입력해주세요.";
     else if (trimmedTitle.length > MAX_TITLE)
@@ -58,9 +46,6 @@ export default function VideoForm() {
 
     if (!url.trim()) next.url = "영상 URL을 입력해주세요.";
     else if (!parsed) next.url = "현재 YouTube와 SOOP 영상만 등록할 수 있습니다.";
-
-    if (trimmedMessage.length > MAX_MESSAGE)
-      next.message = `${MAX_MESSAGE}자 이내로 입력해주세요.`;
 
     if (!month) next.month = "몇 월 클립인지 선택해주세요.";
     if (!category) next.category = "카테고리를 선택해주세요.";
@@ -76,12 +61,10 @@ export default function VideoForm() {
     setSubmitState("submitting");
     try {
       await submitVideo({
-        nickname: nickname.trim(),
         title: title.trim(),
         platform: parsed.platform as VideoPlatform,
         video_url: url.trim(),
         video_id: parsed.videoId,
-        message: message.trim() || null,
         month: Number(month),
         category,
       });
@@ -127,26 +110,6 @@ export default function VideoForm() {
           </span>
         </p>
       )}
-
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between">
-          <label htmlFor="nickname" className="text-xs tracking-[0.2em] text-text-soft">
-            닉네임
-          </label>
-          <span className="text-[11px] text-text-soft/60">
-            {nickname.length}/{MAX_NICKNAME}
-          </span>
-        </div>
-        <input
-          id="nickname"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          maxLength={MAX_NICKNAME}
-          placeholder="예) 은하수"
-          className="border border-white/15 bg-bg-soft px-4 py-3 text-text outline-none transition-colors focus:border-pink"
-        />
-        {errors.nickname && <p className="text-xs text-pink">{errors.nickname}</p>}
-      </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
@@ -227,27 +190,6 @@ export default function VideoForm() {
           </select>
           {errors.category && <p className="text-xs text-pink">{errors.category}</p>}
         </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between">
-          <label htmlFor="message" className="text-xs tracking-[0.2em] text-text-soft">
-            워니에게 한마디 (선택)
-          </label>
-          <span className="text-[11px] text-text-soft/60">
-            {message.length}/{MAX_MESSAGE}
-          </span>
-        </div>
-        <textarea
-          id="message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          maxLength={MAX_MESSAGE}
-          rows={3}
-          placeholder="이 영상에 담긴 마음을 적어주세요."
-          className="font-serif-kr resize-none border border-white/15 bg-bg-soft px-4 py-3 leading-relaxed text-text outline-none transition-colors focus:border-pink"
-        />
-        {errors.message && <p className="text-xs text-pink">{errors.message}</p>}
       </div>
 
       {submitState === "error" && (

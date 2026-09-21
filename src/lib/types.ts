@@ -102,10 +102,14 @@ export interface VideoItem {
   created_at: string;
 }
 
-/** 영상 등록 시 클라이언트가 채우는 값 (best_rank는 폼에 노출하지 않고 관리자가 별도로 설정) */
+/**
+ * 영상 등록 시 클라이언트가 채우는 값. nickname/message는 더 이상 화면에서 입력받지
+ * 않으므로 여기 포함하지 않는다(실제 INSERT 시 lib/videos.ts가 내부적으로 채운다).
+ * best_rank도 폼에 노출하지 않고 관리자가 별도로 설정한다.
+ */
 export type VideoInput = Pick<
   VideoItem,
-  "nickname" | "title" | "platform" | "video_url" | "video_id" | "message" | "month" | "category"
+  "title" | "platform" | "video_url" | "video_id" | "month" | "category"
 >;
 
 /** Supabase archive_images 테이블 한 행. src/data/archive.ts의 ArchiveItem.id와 archive_id로 연결된다. */

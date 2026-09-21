@@ -20,13 +20,29 @@ export async function fetchApprovedVideos(): Promise<VideoItem[]> {
 }
 
 /**
+ * videos.nickname은 not null + 1~30자 체크 제약이 걸려 있어 빈 문자열("")로는 저장할
+ * 수 없다. 닉네임 입력 UI를 없앤 뒤에도 기존 테이블 구조(컬럼/제약)는 그대로 두기로
+ * 했으므로, 화면에서는 절대 보여주지 않는 이 고정값으로만 채운다.
+ */
+const HIDDEN_NICKNAME_PLACEHOLDER = "-";
+
+/**
  * 영상을 등록한다. 별도 승인 절차 없이 is_approved = true로 저장해 즉시 공개하며,
  * 문제가 있는 영상은 관리자가 Supabase Dashboard에서 is_approved를 false로 내려 숨긴다.
+ * nickname/message는 더 이상 사용자에게 입력받지 않으므로, 기존 컬럼 제약을 만족하는
+ * 값(nickname은 고정 placeholder, message는 null)으로 여기서 직접 채운다.
  */
 export async function submitVideo(input: VideoInput): Promise<void> {
   if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
 
-  const { error } = await supabase.from("videos").insert([{ ...input, is_approved: true }]);
+  const { error } = await supabase.from("videos").insert([
+    {
+      ...input,
+      nickname: HIDDEN_NICKNAME_PLACEHOLDER,
+      message: null,
+      is_approved: true,
+    },
+  ]);
   if (error) throw error;
 }
 
