@@ -503,6 +503,13 @@ export const archiveData: ArchiveMonth[] = [
         tags: ["종겜", "벌칙"],
       },
       {
+        id: "2026-08-26-sekku-ssakkamukja",
+        date: "08.26",
+        title: "세구님의 스까묵자 배그",
+        description: "배틀그라운드",
+        tags: ["배그", "합방"],
+      },
+      {
         id: "2026-08-25-08-30",
         date: "08.25 ~ 08.30",
         title: "아르마 대회",
