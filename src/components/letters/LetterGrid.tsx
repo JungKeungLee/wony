@@ -88,6 +88,7 @@ export default function LetterGrid() {
             key={letter.id}
             letter={letter}
             delay={(i % 6) * 0.08}
+            isActive={activeLetter?.id === letter.id}
             onOpen={() => setActiveLetter(letter)}
           />
         ))}
