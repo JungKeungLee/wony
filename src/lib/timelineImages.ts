@@ -25,7 +25,9 @@ export async function fetchTimelineImages(): Promise<Map<number, TimelineImageRo
 
 /**
  * 등록된 모든 Timeline 작은 이미지를 month를 key로 하는 Map으로 한 번에 가져온다.
- * 각 배열은 sort_order(1~3) 오름차순으로 정렬돼 있다.
+ * 각 배열은 sort_order 오름차순으로 정렬돼 있다. 화면에는 슬롯 1~2까지만 노출되지만,
+ * DB의 sort_order check 제약은 그대로 1~3을 허용하므로(완화/삭제하지 않음) 과거에
+ * 등록된 3번째 슬롯 데이터가 있다면 이 Map에는 여전히 포함될 수 있다.
  */
 export async function fetchTimelineSmallImages(): Promise<Map<number, TimelineImageRow[]>> {
   if (!isSupabaseConfigured) throw new SupabaseNotConfiguredError();
@@ -180,13 +182,13 @@ export async function deleteTimelineImage(
 
 interface UploadTimelineSmallImageInput {
   month: number;
-  /** 슬롯 위치 1~3 */
+  /** 슬롯 위치 1~2 */
   sortOrder: number;
   image: Blob;
 }
 
 /**
- * 비어 있는 작은 이미지 슬롯에 사진을 새로 등록한다. is_cover = false로 저장하며,
+ * 비어 있는 작은 이미지 슬롯(1~2)에 사진을 새로 등록한다. is_cover = false로 저장하며,
  * (month, sort_order) 조합이 이미 있으면 DB의 unique index가 막아준다.
  */
 export async function uploadTimelineSmallImage(

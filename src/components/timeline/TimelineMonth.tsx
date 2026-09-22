@@ -7,7 +7,7 @@ import { getTimelineImageUrl } from "@/lib/timelineImages";
 import TimelineImage from "./TimelineImage";
 import { useSiteMode } from "@/context/SiteModeContext";
 
-const SMALL_IMAGE_SLOTS = 3;
+const SMALL_IMAGE_SLOTS = 2;
 
 interface TimelineMonthProps {
   data: TimelineMonthData;
@@ -40,7 +40,11 @@ export default function TimelineMonth({
   const isRight = align === "right";
 
   const resolvedCover = coverImage ? getTimelineImageUrl(coverImage.image_path) : cover;
-  const smallImageUrls = smallImages.map((img) => getTimelineImageUrl(img.image_path));
+  // 슬롯을 2개로 줄인 뒤에도 DB에 남아있을 수 있는 3번째 작은 이미지(과거 데이터)가
+  // 화면이나 모달 탐색에 끼어들지 않도록, 표시용으로는 항상 앞 2개까지만 사용한다.
+  // 데이터 자체는 지우지 않는다.
+  const visibleSmallImages = smallImages.slice(0, SMALL_IMAGE_SLOTS);
+  const smallImageUrls = visibleSmallImages.map((img) => getTimelineImageUrl(img.image_path));
   const displayedImages = [resolvedCover, ...smallImageUrls];
 
   return (
@@ -144,10 +148,10 @@ export default function TimelineMonth({
           <p className="max-w-md text-sm text-text-soft sm:text-base">{description}</p>
           <p className="font-serif-kr max-w-md text-sm text-pink/90 italic">“{quote}”</p>
 
-          <div className={`grid w-full max-w-md grid-cols-3 gap-2 ${isRight ? "" : "md:justify-items-end"}`}>
+          <div className={`grid w-full max-w-md grid-cols-2 gap-3 ${isRight ? "" : "md:justify-items-end"}`}>
             {Array.from({ length: SMALL_IMAGE_SLOTS }, (_, i) => {
               const sortOrder = i + 1;
-              const image = smallImages[i];
+              const image = visibleSmallImages[i];
               const isUploading = uploadingSmallSlot === sortOrder;
 
               if (image) {
@@ -158,7 +162,7 @@ export default function TimelineMonth({
                     alt={`${title} 작은 이미지 ${sortOrder}`}
                     onClick={() => onOpenImage(displayedImages, i + 1, title)}
                     className="aspect-video w-full"
-                    sizes="30vw"
+                    sizes="45vw"
                   />
                 );
               }
