@@ -41,8 +41,17 @@ function isNearViewportCenter(el: HTMLElement): boolean {
  * SURPRISE 맨 마지막 진짜 엔딩. "See you in 2027 ✦" 제목이(자동 스크롤이든 사용자가
  * 직접 스크롤했든) viewport 세로 중심 부근에 들어오는 순간을 감지해서, 자동
  * 스크롤이 같은 조건으로 멈춘 직후 약 0.5초 그 화면을 더 보여준 뒤 전체화면
- * 오버레이로 전환되어 엔딩 영상이 자동재생된다. 브라우저 autoplay 정책으로 소리
- * 포함 재생이 막히면 수동 재생 버튼을 보여준다.
+ * 오버레이로 전환되어 엔딩 영상이 자동재생된다.
+ *
+ * 재생 시도 순서(각 단계는 hasStartedPlaybackRef로 한 번만 실행되고, 실제로
+ * onPlaying이 발생하면 그 즉시 이후 시도를 전부 멈춘다):
+ *   1차 - 소리 포함 자동재생 시도
+ *   2차 - 실패하면 muted 자동재생 시도(성공해도 이후 다시 unmute를 시도하지
+ *         않는다 - 이미 재생 중인 영상을 사용자 제스처 없이 unmute하면 브라우저가
+ *         autoplay 정책을 재적용해 다시 paused로 되돌리는 경우가 있어서, 그게
+ *         "화면은 보이는데 재생이 시작되지 않는" 것처럼 보이는 원인이었다)
+ *   3차 - 그마저 실패하면 [마지막 영상 보기] 버튼을 보여주고, 클릭(사용자 제스처)
+ *         안에서 소리 포함 play()를 다시 시도한다
  *
  * 영상이 끝나면 검은 화면이나 마무리 문구로 전환하지 않는다 - 오버레이만 천천히
  * fade-out되고, 그 뒤에 계속 마운트돼 있던 /surprise 페이지(SurpriseFinal 등)가
@@ -61,6 +70,9 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
   const [stage, setStage] = useState<Stage>("idle");
   const [needsManualStart, setNeedsManualStart] = useState(false);
   const hasTriggeredRef = useRef(false);
+  /** onPlaying이 한 번이라도 발생하면 true - 그 뒤로는 onCanPlay 등에서 다시
+   * play()를 호출해 처음부터 재시작되는 일이 없게 막는 가드. */
+  const hasStartedPlaybackRef = useRef(false);
 
   // "See you in 2027 ✦" 제목이 viewport 세로 중심 부근에 들어오는지 스크롤/리사이즈
   // 때마다 확인한다(useAutoScroll이 같은 조건으로 자동 스크롤을 멈추는 것과는
@@ -108,9 +120,37 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
     return () => window.clearTimeout(timer);
   }, [stage]);
 
-  // 영상 재생 단계로 들어서는 순간: BGM을 서서히 끄고, 영상 재생을 시도한다.
-  // 버튼을 먼저 보여주지 않는다 - 자동재생을 항상 먼저 시도하고, 그게 실패했을
-  // 때만 버튼을 띄운다.
+  /** 소리 포함 → 실패 시 muted 순서로 자동재생을 시도한다. 이미 재생이 시작됐다면
+   * (hasStartedPlaybackRef) 아무 것도 하지 않는다 - 처음부터 다시 재생되는 것을
+   * 막기 위함이다. */
+  async function attemptAutoplay(video: HTMLVideoElement) {
+    if (hasStartedPlaybackRef.current) return;
+
+    try {
+      video.muted = false;
+      await video.play();
+      return; // 성공하면 onPlaying이 곧 따라와서 나머지 상태를 정리한다.
+    } catch (error) {
+      console.error("[SurpriseEndingVideo] 소리 포함 자동재생 실패:", error);
+    }
+
+    if (hasStartedPlaybackRef.current) return;
+
+    try {
+      video.muted = true;
+      await video.play();
+      return; // 무음으로 재생 시작 - 이후 다시 unmute를 시도하지 않는다.
+    } catch (error) {
+      console.error("[SurpriseEndingVideo] muted 자동재생도 실패:", error);
+    }
+
+    if (hasStartedPlaybackRef.current) return;
+    setNeedsManualStart(true);
+  }
+
+  // 영상 재생 단계로 들어서는 순간: BGM을 서서히 끄고, 자동재생을 시도한다.
+  // 버튼을 먼저 보여주지 않는다 - 자동재생을 항상 먼저 시도하고, 그게(소리
+  // 포함/muted 둘 다) 실패했을 때만 버튼을 띄운다.
   useEffect(() => {
     if (stage !== "playing") return;
 
@@ -118,36 +158,40 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
 
     const video = videoRef.current;
     if (!video) return;
-
-    // 소리 있는 자동재생은 브라우저 정책상 거의 항상 막히지만, muted 자동재생은
-    // 대부분 허용된다. 그래서 우선 muted로 재생을 시작해 성공 확률을 최대한
-    // 높이고, 재생이 실제로 시작된 뒤에만 소리를 켜본다 - 브라우저가 그마저도
-    // 막으면(정책상 거부) 에러 없이 조용히 무음 재생으로 계속 이어진다.
-    video.muted = true;
-    video
-      .play()
-      .then(() => {
-        setNeedsManualStart(false);
-        video.muted = false;
-      })
-      .catch(() => {
-        // muted 자동재생조차 막힌 경우(파일 로드 실패 등)에만 사용자가 직접
-        // 눌러야 하는 버튼을 보여준다(클릭은 명확한 사용자 제스처라 항상 허용된다).
-        setNeedsManualStart(true);
-      });
+    void attemptAutoplay(video);
   }, [stage, fadeOutAndStop]);
 
-  function handleManualStart() {
+  /** overlay가 mount된 시점엔 아직 영상이 충분히 로드되지 않아 play()가 조용히
+   * 무시됐을 가능성에 대비해, 재생 가능해진 시점(canplay)에 한 번 더 시도한다.
+   * hasStartedPlaybackRef 가드 덕분에 이미 재생 중이면 아무 일도 하지 않는다. */
+  function handleCanPlay() {
+    const video = videoRef.current;
+    if (!video || hasStartedPlaybackRef.current || !video.paused) return;
+    void attemptAutoplay(video);
+  }
+
+  /** 실제로 재생이 시작된 순간(가장 신뢰할 수 있는 신호) - 이후로는 재생 시도를
+   * 전부 멈추고 fallback 버튼을 확실히 치운다. */
+  function handlePlaying() {
+    hasStartedPlaybackRef.current = true;
+    setNeedsManualStart(false);
+  }
+
+  function handleVideoError() {
+    console.error("[SurpriseEndingVideo] 영상 로드/재생 오류:", videoRef.current?.error);
+    if (!hasStartedPlaybackRef.current) setNeedsManualStart(true);
+  }
+
+  async function handleManualStart() {
     const video = videoRef.current;
     if (!video) return;
     // 클릭이라는 사용자 제스처 안에서 직접 호출해야 소리 포함 재생이 허용된다.
     video.muted = false;
-    video
-      .play()
-      .then(() => setNeedsManualStart(false))
-      .catch(() => {
-        // 그래도 실패하면(파일 자체가 없는 경우 등) 조용히 버튼을 그대로 둔다.
-      });
+    try {
+      await video.play();
+    } catch (error) {
+      console.error("[SurpriseEndingVideo] 수동 재생도 실패:", error);
+    }
   }
 
   function handleEnded() {
@@ -180,9 +224,13 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
           <video
             ref={videoRef}
             src={SURPRISE_ENDING_VIDEO_SRC}
-            muted
+            autoPlay
             playsInline
+            preload="auto"
+            onCanPlay={handleCanPlay}
+            onPlaying={handlePlaying}
             onEnded={handleEnded}
+            onError={handleVideoError}
             className="max-h-[100vh] max-w-full object-contain"
           />
           {needsManualStart && (
