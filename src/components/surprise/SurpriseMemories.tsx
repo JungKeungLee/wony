@@ -8,7 +8,7 @@ export default function SurpriseMemories() {
     prefersReducedMotion ? { duration: 0.4, delay: 0 } : { duration: 1.2, ease: "easeOut" as const, delay };
 
   return (
-    <section className="flex min-h-svh flex-col items-center justify-center gap-6 px-6 text-center">
+    <section className="flex flex-col items-center gap-6 px-6 pb-24 pt-6 text-center sm:pb-32">
       <motion.p
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}

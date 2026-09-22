@@ -78,7 +78,7 @@ export default function SurpriseMessage() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <section className="px-6 py-32 sm:py-40">
+    <section className="px-6 pb-12 pt-32 sm:pb-16 sm:pt-40">
       <div className="mx-auto flex max-w-[700px] flex-col items-center gap-16 text-center sm:gap-20">
         {MESSAGE_BLOCKS.map((block, i) => (
           <motion.p

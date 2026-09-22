@@ -72,29 +72,6 @@ export default function SurpriseMessageStars() {
 
   return (
     <section className="flex min-h-svh flex-col items-center justify-center gap-10 px-6 py-24 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <motion.h2
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="font-display text-xl tracking-wide text-text sm:text-2xl"
-        >
-          달빛 아래 모인 소원들 ✦
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="font-serif-kr max-w-sm text-sm leading-relaxed text-text-soft"
-        >
-          누군가의 작은 소원들이
-          <br />
-          오늘 밤 달빛 아래 하나둘 모이고 있어요.
-        </motion.p>
-      </div>
-
       <div className="relative h-72 w-full max-w-xl sm:h-80">
         {stars.map((star, i) => (
           <button

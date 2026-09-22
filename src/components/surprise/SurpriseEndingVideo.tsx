@@ -109,6 +109,8 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
   }, [stage]);
 
   // 영상 재생 단계로 들어서는 순간: BGM을 서서히 끄고, 영상 재생을 시도한다.
+  // 버튼을 먼저 보여주지 않는다 - 자동재생을 항상 먼저 시도하고, 그게 실패했을
+  // 때만 버튼을 띄운다.
   useEffect(() => {
     if (stage !== "playing") return;
 
@@ -116,11 +118,20 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
 
     const video = videoRef.current;
     if (!video) return;
+
+    // 소리 있는 자동재생은 브라우저 정책상 거의 항상 막히지만, muted 자동재생은
+    // 대부분 허용된다. 그래서 우선 muted로 재생을 시작해 성공 확률을 최대한
+    // 높이고, 재생이 실제로 시작된 뒤에만 소리를 켜본다 - 브라우저가 그마저도
+    // 막으면(정책상 거부) 에러 없이 조용히 무음 재생으로 계속 이어진다.
+    video.muted = true;
     video
       .play()
-      .then(() => setNeedsManualStart(false))
+      .then(() => {
+        setNeedsManualStart(false);
+        video.muted = false;
+      })
       .catch(() => {
-        // 브라우저 autoplay 정책으로 소리 포함 재생이 막힌 경우 - 사용자가 직접
+        // muted 자동재생조차 막힌 경우(파일 로드 실패 등)에만 사용자가 직접
         // 눌러야 하는 버튼을 보여준다(클릭은 명확한 사용자 제스처라 항상 허용된다).
         setNeedsManualStart(true);
       });
@@ -129,6 +140,8 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
   function handleManualStart() {
     const video = videoRef.current;
     if (!video) return;
+    // 클릭이라는 사용자 제스처 안에서 직접 호출해야 소리 포함 재생이 허용된다.
+    video.muted = false;
     video
       .play()
       .then(() => setNeedsManualStart(false))
@@ -167,7 +180,7 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
           <video
             ref={videoRef}
             src={SURPRISE_ENDING_VIDEO_SRC}
-            autoPlay
+            muted
             playsInline
             onEnded={handleEnded}
             className="max-h-[100vh] max-w-full object-contain"
