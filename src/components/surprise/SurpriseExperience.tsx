@@ -18,8 +18,11 @@ export default function SurpriseExperience() {
   const [introDone, setIntroDone] = useState(false);
   const [montageDone, setMontageDone] = useState(false);
   const finalSectionRef = useRef<HTMLElement>(null);
+  /** "See you in 2027 ✦" 제목 자체의 ref - 자동 스크롤 정지 조건과 엔딩 영상 트리거
+   * 조건 둘 다 이 제목이 viewport 세로 중심에 도달했는지를 기준으로 판단한다. */
+  const finalMessageRef = useRef<HTMLHeadingElement>(null);
   const { state, pause, resume, controlRef } = useAutoScroll({
-    stopAtRef: finalSectionRef,
+    stopAtRef: finalMessageRef,
     // 오프닝과 사진 몽타주가 모두 끝나기 전에는 자동 스크롤이 절대 움직이지 않는다.
     enabled: !prefersReducedMotion && introDone && montageDone,
   });
@@ -38,8 +41,8 @@ export default function SurpriseExperience() {
       <SurpriseMemories />
       <SurpriseMessageStars />
       <SurpriseCredits />
-      <SurpriseFinal sectionRef={finalSectionRef} />
-      <SurpriseEndingVideo />
+      <SurpriseFinal sectionRef={finalSectionRef} titleRef={finalMessageRef} />
+      <SurpriseEndingVideo finalMessageRef={finalMessageRef} />
 
       {showControl && (
         <button

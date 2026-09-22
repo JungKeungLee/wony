@@ -9,11 +9,14 @@ import { useMusic } from "@/context/MusicContext";
 const DUCK_FACTOR = 0.6;
 
 interface SurpriseFinalProps {
-  /** 부모(SurpriseExperience)가 자동 스크롤 정지 지점 판단에도 같이 쓰는 공유 ref. */
+  /** 부모(SurpriseExperience)가 BGM 덕킹(isInView) 판단에 쓰는 섹션 전체 ref. */
   sectionRef: RefObject<HTMLElement | null>;
+  /** "See you in 2027 ✦" 제목 자체의 ref. 부모가 이 제목이 viewport 세로 중심에
+   * 도달했는지(자동 스크롤 정지 + 엔딩 영상 트리거 조건)를 판단하는 데 쓴다. */
+  titleRef: RefObject<HTMLHeadingElement | null>;
 }
 
-export default function SurpriseFinal({ sectionRef }: SurpriseFinalProps) {
+export default function SurpriseFinal({ sectionRef, titleRef }: SurpriseFinalProps) {
   const prefersReducedMotion = useReducedMotion();
   const isInView = useInView(sectionRef, { margin: "-20% 0px" });
   const { duckVolume, restoreVolume } = useMusic();
@@ -38,6 +41,7 @@ export default function SurpriseFinal({ sectionRef }: SurpriseFinalProps) {
       className="flex min-h-svh flex-col items-center justify-center gap-6 px-6 text-center"
     >
       <motion.h2
+        ref={titleRef}
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10% 0px" }}

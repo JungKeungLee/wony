@@ -6,14 +6,29 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 const START_DELAY_MS = 2500;
 /** 영화 엔딩 크레딧처럼 느린 속도(px/s). */
 const SPEED_PX_PER_SEC = 75;
+/** stopAtRef 요소의 세로 중심이 viewport 세로 중심에서 이 비율(뷰포트 높이 기준)
+ * 이내로 들어오면 정지한다. SurpriseEndingVideo의 트리거 조건과 정확히 같은
+ * 기준을 써야 하므로 값을 바꾸려면 그쪽의 CENTER_TRIGGER_TOLERANCE_RATIO도 같이 바꾼다. */
+const CENTER_STOP_TOLERANCE_RATIO = 0.125;
 
 export type AutoScrollState = "pending" | "running" | "paused" | "stopped";
 
 interface UseAutoScrollOptions {
-  /** 이 요소의 상단이 뷰포트 상단에 닿으면 자동 스크롤을 멈추고 다시는 재개하지 않는다. */
+  /** 이 요소의 세로 중심이 viewport 세로 중심 부근(±CENTER_STOP_TOLERANCE_RATIO)에
+   * 들어오면 자동 스크롤을 멈추고 다시는 재개하지 않는다. */
   stopAtRef: RefObject<HTMLElement | null>;
   /** false면(prefers-reduced-motion 등) 기능 전체를 비활성화하고 일반 페이지처럼 둔다. */
   enabled: boolean;
+}
+
+/** el의 세로 중심이 viewport 세로 중심에 얼마나 가까운지 확인한다. 1px 단위로
+ * 딱 맞을 필요는 없고 CENTER_STOP_TOLERANCE_RATIO만큼의 여유를 둔다. */
+function isNearViewportCenter(el: HTMLElement): boolean {
+  const rect = el.getBoundingClientRect();
+  const elementCenter = rect.top + rect.height / 2;
+  const viewportCenter = window.innerHeight / 2;
+  const tolerance = window.innerHeight * CENTER_STOP_TOLERANCE_RATIO;
+  return Math.abs(elementCenter - viewportCenter) <= tolerance;
 }
 
 /**
@@ -66,7 +81,7 @@ export function useAutoScroll({ stopAtRef, enabled }: UseAutoScrollOptions) {
       lastTimestampRef.current = timestamp;
 
       const stopEl = stopAtRef.current;
-      if (stopEl && stopEl.getBoundingClientRect().top <= 0) {
+      if (stopEl && isNearViewportCenter(stopEl)) {
         setState("stopped");
         return;
       }
