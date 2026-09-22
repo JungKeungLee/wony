@@ -5,6 +5,7 @@ import type { ArchiveItem } from "@/data/archive";
 import type { ArchiveComment, ArchiveImage } from "@/lib/types";
 import ArchivePhotoSlot from "./ArchivePhotoSlot";
 import ArchiveMemoryNote from "./ArchiveMemoryNote";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 interface ArchiveCardProps {
   item: ArchiveItem;
@@ -32,6 +33,8 @@ export default function ArchiveCard({
   onEditEntry,
   onDeleteEntry,
 }: ArchiveCardProps) {
+  const { isContributeMode } = useSiteMode();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
@@ -92,13 +95,16 @@ export default function ArchiveCard({
         >
           [ 수정 ]
         </button>
-        <button
-          type="button"
-          onClick={onDeleteEntry}
-          className="text-[10px] tracking-[0.1em] text-text-soft/40 transition-colors hover:text-pink"
-        >
-          [ 삭제 ]
-        </button>
+        {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+        {!isContributeMode && (
+          <button
+            type="button"
+            onClick={onDeleteEntry}
+            className="text-[10px] tracking-[0.1em] text-text-soft/40 transition-colors hover:text-pink"
+          >
+            [ 삭제 ]
+          </button>
+        )}
       </div>
     </motion.div>
   );

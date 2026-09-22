@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { deleteLetter, toErrorMessage, updateLetter } from "@/lib/letters";
 import type { Letter, LetterInput } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 const MAX_NICKNAME = 30;
 const MAX_CONTENT = 2000;
@@ -25,6 +26,7 @@ interface FieldErrors {
 
 export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: LetterModalProps) {
   const isOpen = letter !== null;
+  const { isContributeMode } = useSiteMode();
 
   const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState("");
@@ -192,25 +194,28 @@ export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: L
             transition={{ duration: 0.25 }}
             onMouseDown={handleBackdropMouseDown}
             onClick={handleBackdropClick}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.96, y: 14, rotate: -0.6 }}
+              animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 8, rotate: 0.4 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto border border-white/10 bg-bg-soft px-7 py-10 sm:px-10"
+              className="relative w-[92vw] max-w-lg max-h-[88vh] sm:max-h-[85vh] border border-white/10 bg-bg-soft"
             >
+              {/* 닫기 버튼은 스크롤 영역 밖(이 wrapper)에 둬서, 편지가 길어 안쪽이
+                  스크롤되더라도 항상 같은 자리에서 눌러 닫을 수 있게 한다. */}
               <button
                 type="button"
                 onClick={closeModal}
                 aria-label="닫기"
-                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center text-xl text-text-soft transition-colors hover:text-pink"
+                className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center text-xl text-text-soft transition-colors hover:text-pink"
               >
                 ✕
               </button>
 
+              <div className="max-h-[88vh] overflow-y-auto px-7 py-10 sm:max-h-[85vh] sm:px-10">
               {isEditing ? (
                 <form onSubmit={handleSave} noValidate className="flex flex-col gap-6">
                   <p className="font-display text-sm tracking-[0.2em] text-star">
@@ -326,7 +331,11 @@ export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: L
                 </form>
               ) : (
                 letter && (
-                  <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.35, delay: 0.15, ease: "easeOut" }}
+                  >
                     <p className="font-display text-sm tracking-[0.2em] text-star">Dear. WONY</p>
 
                     <p className="font-serif-kr mt-6 whitespace-pre-wrap text-base leading-relaxed text-text sm:text-lg">
@@ -353,17 +362,21 @@ export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: L
                       >
                         수정
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmOpen(true)}
-                        className="border border-pink/30 px-5 py-2 text-xs tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
-                      >
-                        삭제
-                      </button>
+                      {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+                      {!isContributeMode && (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmOpen(true)}
+                          className="border border-pink/30 px-5 py-2 text-xs tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                        >
+                          삭제
+                        </button>
+                      )}
                     </div>
-                  </>
+                  </motion.div>
                 )
               )}
+              </div>
             </motion.div>
           </motion.div>
         )}

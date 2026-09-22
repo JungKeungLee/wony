@@ -7,6 +7,7 @@ import { getArchiveImageUrl } from "@/lib/archiveImages";
 import { toErrorMessage } from "@/lib/letters";
 import type { ArchiveImage } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 interface ArchiveImageModalProps {
   archiveId: string | null;
@@ -24,6 +25,7 @@ export default function ArchiveImageModal({
   onDelete,
 }: ArchiveImageModalProps) {
   const isOpen = archiveId !== null && image !== null;
+  const { isContributeMode } = useSiteMode();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -120,13 +122,16 @@ export default function ArchiveImageModal({
                   >
                     이미지 변경
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmOpen(true)}
-                    className="border border-pink/30 px-5 py-2 text-xs tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
-                  >
-                    이미지 삭제
-                  </button>
+                  {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+                  {!isContributeMode && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmOpen(true)}
+                      className="border border-pink/30 px-5 py-2 text-xs tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                    >
+                      이미지 삭제
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

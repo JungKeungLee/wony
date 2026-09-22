@@ -5,6 +5,7 @@ import type { TimelineMonthData, TimelineImageRow } from "@/lib/types";
 import { fadeUp } from "@/lib/motion";
 import { getTimelineImageUrl } from "@/lib/timelineImages";
 import TimelineImage from "./TimelineImage";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 const SMALL_IMAGE_SLOTS = 3;
 
@@ -33,6 +34,7 @@ export default function TimelineMonth({
   onAddSmallPhoto,
   onOpenImage,
 }: TimelineMonthProps) {
+  const { isContributeMode } = useSiteMode();
   const { month, monthLabel, date, title, description, quote, images, featured } = data;
   const cover = images[0];
   const isRight = align === "right";
@@ -120,17 +122,20 @@ export default function TimelineMonth({
                 >
                   {isUploadingCover ? "변경하는 중..." : "[ 이미지 변경 ]"}
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteCoverPhoto();
-                  }}
-                  disabled={isUploadingCover}
-                  className="border border-pink/30 bg-bg/70 px-3 py-1.5 text-[11px] tracking-[0.1em] text-pink/80 backdrop-blur-sm transition-colors hover:border-pink hover:text-pink disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  [ 이미지 삭제 ]
-                </button>
+                {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+                {!isContributeMode && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteCoverPhoto();
+                    }}
+                    disabled={isUploadingCover}
+                    className="border border-pink/30 bg-bg/70 px-3 py-1.5 text-[11px] tracking-[0.1em] text-pink/80 backdrop-blur-sm transition-colors hover:border-pink hover:text-pink disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    [ 이미지 삭제 ]
+                  </button>
+                )}
               </div>
             )}
           </div>

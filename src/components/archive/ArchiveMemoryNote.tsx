@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { toErrorMessage } from "@/lib/letters";
 import type { ArchiveComment } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 const MAX_COMMENT = 1000;
 
@@ -15,6 +16,7 @@ interface ArchiveMemoryNoteProps {
 
 /** Archive 각 항목 하단에 붙는 "✦ 그날의 기록 / MEMORY NOTE" - 코멘트 1개를 보고/추가/수정/삭제한다. */
 export default function ArchiveMemoryNote({ comment, onSave, onDelete }: ArchiveMemoryNoteProps) {
+  const { isContributeMode } = useSiteMode();
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState("");
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
@@ -121,13 +123,16 @@ export default function ArchiveMemoryNote({ comment, onSave, onDelete }: Archive
             <button type="button" onClick={startEditing} className="transition-colors hover:text-star">
               [ 수정 ]
             </button>
-            <button
-              type="button"
-              onClick={() => setConfirmOpen(true)}
-              className="transition-colors hover:text-pink"
-            >
-              [ 삭제 ]
-            </button>
+            {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+            {!isContributeMode && (
+              <button
+                type="button"
+                onClick={() => setConfirmOpen(true)}
+                className="transition-colors hover:text-pink"
+              >
+                [ 삭제 ]
+              </button>
+            )}
           </div>
         </div>
       ) : (

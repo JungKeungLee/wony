@@ -6,6 +6,7 @@ import { deleteFanArt, getFanArtImageUrl } from "@/lib/fanArt";
 import { toErrorMessage } from "@/lib/letters";
 import type { FanArt } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 interface FanArtModalProps {
   arts: FanArt[];
@@ -43,6 +44,7 @@ function ModalArtImage({ src }: { src: string }) {
 /** 팬아트 확대 보기 - 이미지, 닫기, 이전/다음, 삭제만 있다(작성자/제목/메시지는 표시하지 않는다). */
 export default function FanArtModal({ arts, index, onClose, onNavigate, onDeleted }: FanArtModalProps) {
   const art = index !== null ? arts[index] : null;
+  const { isContributeMode } = useSiteMode();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -158,15 +160,18 @@ export default function FanArtModal({ arts, index, onClose, onNavigate, onDelete
 
             {deleteError && <p className="mt-3 text-xs text-pink">{deleteError}</p>}
 
-            <div className="mt-4 flex justify-center border-t border-white/10 pt-4">
-              <button
-                type="button"
-                onClick={() => setConfirmOpen(true)}
-                className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
-              >
-                팬아트 삭제
-              </button>
-            </div>
+            {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
+            {!isContributeMode && (
+              <div className="mt-4 flex justify-center border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setConfirmOpen(true)}
+                  className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                >
+                  팬아트 삭제
+                </button>
+              </div>
+            )}
           </motion.div>
 
           {arts.length > 1 && (

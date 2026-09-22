@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 export interface ImageModalState {
   images: string[];
@@ -50,6 +51,7 @@ export default function ImageModal({
   nonDeletableIndex,
 }: ImageModalProps) {
   const isOpen = state !== null;
+  const { isContributeMode } = useSiteMode();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -80,7 +82,8 @@ export default function ImageModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [state, onClose, onNavigate]);
 
-  const canDelete = state && onDeleteImage && state.index !== nonDeletableIndex;
+  // 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다.
+  const canDelete = !isContributeMode && state && onDeleteImage && state.index !== nonDeletableIndex;
 
   return (
     <AnimatePresence>
