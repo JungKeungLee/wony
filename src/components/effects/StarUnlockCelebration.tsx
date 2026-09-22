@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useStarCollection } from "@/context/StarCollectionContext";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 /** 별 7개를 모두 모은 순간 딱 한 번 뜨는 축하 안내. "[ THE FINAL PAGE ]" 이동 버튼은
  * 여기가 아니라 Footer에 상시 노출되는 쪽에 둔다 (이 모달은 순수 안내용). */
 export default function StarUnlockCelebration() {
+  const { isContributeMode } = useSiteMode();
   const { justUnlocked, dismissJustUnlocked } = useStarCollection();
   const [phase, setPhase] = useState<"first" | "second">("first");
 
@@ -21,7 +23,7 @@ export default function StarUnlockCelebration() {
 
   return (
     <AnimatePresence>
-      {justUnlocked && (
+      {!isContributeMode && justUnlocked && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

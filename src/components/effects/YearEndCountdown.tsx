@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useHasMounted } from "@/lib/useHasMounted";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 /**
  * 실제 운영 목표 시각(KST, UTC+9). 2026-12-31 23:30부터 작은 뱃지가 뜨고, 정각에
@@ -114,6 +115,7 @@ export default function YearEndCountdown() {
   const hasMounted = useHasMounted();
   const pathname = usePathname();
   const router = useRouter();
+  const { isContributeMode } = useSiteMode();
   const [now, setNow] = useState<number | null>(null);
   const [alreadySeen, setAlreadySeen] = useState(false);
   const [hasLoadedSeen, setHasLoadedSeen] = useState(false);
@@ -180,6 +182,9 @@ export default function YearEndCountdown() {
     return () => clearTimeout(timer);
   }, [phase, pathname, router, redirected, isTestMode]);
 
+  // contribute 모드에서는 카운트다운/HAPPY 2027/마지막 10초 연출을 전부 숨긴다
+  // (?countdownTest=true도 이 컴포넌트 자체가 그려지지 않으므로 자연히 함께 막힌다).
+  if (isContributeMode) return null;
   if (phase === "idle" || now === null) return null;
 
   const isSurprisePage = pathname === "/surprise";

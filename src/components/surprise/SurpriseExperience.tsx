@@ -10,6 +10,7 @@ import SurpriseMemories from "./SurpriseMemories";
 import SurpriseMessageStars from "./SurpriseMessageStars";
 import SurpriseCredits from "./SurpriseCredits";
 import SurpriseFinal from "./SurpriseFinal";
+import SurpriseEndingVideo from "./SurpriseEndingVideo";
 import { useAutoScroll } from "./useAutoScroll";
 
 export default function SurpriseExperience() {
@@ -38,6 +39,7 @@ export default function SurpriseExperience() {
       <SurpriseMessageStars />
       <SurpriseCredits />
       <SurpriseFinal sectionRef={finalSectionRef} />
+      <SurpriseEndingVideo />
 
       {showControl && (
         <button

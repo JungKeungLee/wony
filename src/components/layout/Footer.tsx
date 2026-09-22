@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion";
 import { CONTACT_EMAIL, FOOTER_LEGAL_LINKS, FOOTER_SOCIAL_LINKS } from "@/lib/constants";
 import { useStarCollection } from "@/context/StarCollectionContext";
+import { useSiteMode } from "@/context/SiteModeContext";
 import type { FooterLink } from "@/lib/types";
 
 function FooterLinkItem({ link }: { link: FooterLink }) {
@@ -40,10 +41,46 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
   );
 }
 
+/** contribute 모드 전용 최소 Footer. TIMELINE/ARCHIVE/STATISTICS/SURPRISE/다이아 등
+ * 정식 공개 전 숨겨야 하는 어떤 정보도 포함하지 않는다 - isUnlocked(다이아 7개
+ * 수집 여부)는 과거에 이미 모아둔 방문자가 있을 수 있어 아예 참조하지 않는다. */
+function ContributeFooter() {
+  return (
+    <motion.footer
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      variants={fadeUp}
+      className="relative overflow-hidden bg-bg"
+    >
+      <div className="relative border-t border-white/10">
+        <span
+          aria-hidden
+          className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 bg-bg px-3 text-sm text-star"
+        >
+          ✦
+        </span>
+      </div>
+
+      <div className="relative mx-auto flex max-w-xl flex-col items-center gap-2 px-6 py-10 text-center">
+        <p className="font-display text-lg tracking-[0.15em] text-text">WONY 2026</p>
+        <p className="font-serif-kr text-xs leading-relaxed text-text-soft/70">
+          2026년의 마지막 페이지를
+          <br />
+          함께 채우고 있습니다. ✦
+        </p>
+      </div>
+    </motion.footer>
+  );
+}
+
 export default function Footer() {
   const pathname = usePathname();
   const { isUnlocked } = useStarCollection();
+  const { isContributeMode } = useSiteMode();
   const showFinalPageLink = isUnlocked && pathname !== "/surprise";
+
+  if (isContributeMode) return <ContributeFooter />;
 
   return (
     <motion.footer

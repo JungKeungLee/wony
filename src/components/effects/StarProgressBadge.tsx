@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { ALL_STAR_IDS, useStarCollection } from "@/context/StarCollectionContext";
+import { useSiteMode } from "@/context/SiteModeContext";
 import StatusToast from "@/components/ui/StatusToast";
 
 const HINT_MESSAGES = {
@@ -17,6 +18,7 @@ const HINT_MESSAGES = {
  */
 export default function StarProgressBadge() {
   const pathname = usePathname();
+  const { isContributeMode } = useSiteMode();
   const { collectedStars, firstStarJustFound, dismissFirstStarHint } = useStarCollection();
   // 첫 힌트는 "발견했어요" -> (잠시 후) "다른 곳에도..." 두 단계로 순서대로 보여준다.
   // 렌더 중 조건부로 한 번만 올려두는 패턴이라 useEffect의 set-state-in-effect 문제가 없다.
@@ -34,6 +36,9 @@ export default function StarProgressBadge() {
     dismissFirstStarHint();
   }
 
+  // contribute 모드에서는 방문자가 과거(정식 공개 전 테스트 등)에 이미 다이아를
+  // 모아둔 기록이 localStorage에 남아 있더라도 절대 노출하지 않는다.
+  if (isContributeMode) return null;
   if (pathname === "/surprise" || collectedStars.length === 0) return null;
 
   return (

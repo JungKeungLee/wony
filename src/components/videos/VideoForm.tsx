@@ -10,6 +10,7 @@ import { getPlatformLabel, parseVideoUrl } from "@/lib/videoPlatform";
 import { VIDEO_CATEGORIES, getCategoryLabel } from "@/lib/videoCategory";
 import { validateImageFile, prepareThumbnailForUpload } from "@/lib/imageProcessing";
 import { uploadVideoThumbnail } from "@/lib/videoThumbnails";
+import { VIDEO_VOTING_ENABLED } from "@/lib/constants";
 import type { VideoCategory, VideoPlatform } from "@/lib/types";
 
 const MAX_TITLE = 100;
@@ -176,6 +177,21 @@ export default function VideoForm() {
           </span>
         </p>
       )}
+
+      <p className="font-serif-kr text-xs leading-relaxed text-text-soft/70">
+        모든 영상을 올리기보다는 2026년 워니 방송 중 정말 기억에 남았던 순간을
+        골라주세요.
+        <br />
+        YouTube / SOOP 영상을 등록할 수 있습니다.
+        {VIDEO_VOTING_ENABLED && (
+          <>
+            <br />
+            같은 영상에 여러 번 투표해도 괜찮습니다.
+            <br />
+            투표 결과는 공개되지 않으며 연말 콘텐츠 선정에 참고됩니다.
+          </>
+        )}
+      </p>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">

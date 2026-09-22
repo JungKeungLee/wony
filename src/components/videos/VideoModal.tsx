@@ -11,10 +11,13 @@ import {
 } from "@/lib/videoPlatform";
 import { getCategoryLabel } from "@/lib/videoCategory";
 import { deleteVideo } from "@/lib/videos";
+import { VIDEO_VOTING_ENABLED } from "@/lib/constants";
 import type { VideoItem } from "@/lib/types";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import VideoEditForm from "./VideoEditForm";
+import VoteButton from "./VoteButton";
 import { useMusic } from "@/context/MusicContext";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 interface VideoModalProps {
   videos: VideoItem[];
@@ -81,6 +84,7 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
   const isOpen = video !== null;
 
   const { pauseForOverlay, resumeForOverlay } = useMusic();
+  const { isContributeMode } = useSiteMode();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -229,24 +233,34 @@ export default function VideoModal({ videos, index, onClose, onNavigate, onDelet
               <h3 className="font-serif-kr text-lg text-text sm:text-xl">{video.title}</h3>
               <p className="mt-1 text-xs text-text-soft/60">{formatDate(video.created_at)}</p>
 
+              {VIDEO_VOTING_ENABLED && (
+                <div className="mt-3">
+                  <VoteButton videoId={video.id} />
+                </div>
+              )}
+
               {deleteError && <p className="mt-2 text-right text-xs text-pink">{deleteError}</p>}
 
-              <div className="mt-4 flex justify-end gap-3 border-t border-white/10 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setEditingVideo(video)}
-                  className="border border-white/15 px-4 py-1.5 text-[11px] tracking-[0.15em] text-text-soft transition-colors hover:border-star hover:text-star"
-                >
-                  영상 수정
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmOpen(true)}
-                  className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
-                >
-                  영상 삭제
-                </button>
-              </div>
+              {/* VIDEO는 운영자가 관리하는 구조라, contribute(고객) 모드에서는
+                  수정/삭제 버튼 자체를 보여주지 않는다 - 고객은 조회/재생/투표만 한다. */}
+              {!isContributeMode && (
+                <div className="mt-4 flex justify-end gap-3 border-t border-white/10 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingVideo(video)}
+                    className="border border-white/15 px-4 py-1.5 text-[11px] tracking-[0.15em] text-text-soft transition-colors hover:border-star hover:text-star"
+                  >
+                    영상 수정
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmOpen(true)}
+                    className="border border-pink/30 px-4 py-1.5 text-[11px] tracking-[0.15em] text-pink/80 transition-colors hover:border-pink hover:text-pink"
+                  >
+                    영상 삭제
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
 

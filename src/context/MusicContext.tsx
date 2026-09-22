@@ -12,6 +12,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { DEFAULT_BGM_SRC, DEFAULT_BGM_VOLUME, SURPRISE_BGM_SRC } from "@/lib/constants";
+import { useSiteMode } from "./SiteModeContext";
 
 const VOLUME_STORAGE_KEY = "wony-bgm-volume";
 const PLAY_PREFERENCE_STORAGE_KEY = "wony-bgm-play-preference";
@@ -45,6 +46,13 @@ interface MusicContextValue {
    * 강제로 켜지 않는다.
    */
   ensurePlayback: () => void;
+  /**
+   * SURPRISE 마지막 엔딩 영상처럼 "이후 다시 켤 필요 없는" 순간 전용. durationMs에
+   * 걸쳐 현재 재생 중인 BGM의 소리를 서서히 0까지 낮춘 뒤 멈춘다. 사용자의 volume
+   * 설정(state/localStorage)은 건드리지 않으므로, 이후 다른 페이지에서는 원래
+   * 볼륨으로 정상 재생된다.
+   */
+  fadeOutAndStop: (durationMs: number) => void;
 }
 
 const MusicContext = createContext<MusicContextValue | null>(null);
@@ -115,6 +123,7 @@ function playWhenReady(audio: HTMLAudioElement, onSettled: (success: boolean, er
 
 export function MusicProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { isContributeMode } = useSiteMode();
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState<number>(readStoredVolume);
 
@@ -127,6 +136,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const isPlayingRef = useRef(isPlaying);
   const volumeRef = useRef(volume);
   const crossfadeFrameRef = useRef<number | null>(null);
+  const endingFadeFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -145,6 +155,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   }, [getAudio]);
 
   const toggleMusic = useCallback(() => {
+    // MUSIC ON/OFF UI 자체를 숨기지만, 혹시 모를 다른 경로의 호출까지 막아둔다.
+    if (isContributeMode) return;
     setIsPlaying((prev) => {
       const next = !prev;
       const audio = getActiveAudio();
@@ -178,7 +190,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       writePlayPreference(next ? "on" : "off");
       return next;
     });
-  }, [getActiveAudio]);
+  }, [getActiveAudio, isContributeMode]);
 
   const setVolume = useCallback((next: number) => {
     const clamped = Math.min(1, Math.max(0, next));
@@ -217,6 +229,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   }, [getActiveAudio]);
 
   const ensurePlayback = useCallback(() => {
+    if (isContributeMode) return;
     if (readPlayPreference() === "off") return;
     const audio = getActiveAudio();
     if (!audio || !audio.paused) return;
@@ -227,7 +240,38 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         writePlayPreference("on");
       }
     });
-  }, [getActiveAudio]);
+  }, [getActiveAudio, isContributeMode]);
+
+  const fadeOutAndStop = useCallback(
+    (durationMs: number) => {
+      const maybeAudio = getActiveAudio();
+      if (!maybeAudio || maybeAudio.paused) return;
+      const audio: HTMLAudioElement = maybeAudio;
+
+      if (endingFadeFrameRef.current !== null) {
+        cancelAnimationFrame(endingFadeFrameRef.current);
+        endingFadeFrameRef.current = null;
+      }
+
+      const startVolume = audio.volume;
+      const startedAt = performance.now();
+
+      function step(now: number) {
+        const progress = Math.min(1, Math.max(0, (now - startedAt) / durationMs));
+        audio.volume = Math.max(0, startVolume * (1 - progress));
+        if (progress < 1) {
+          endingFadeFrameRef.current = requestAnimationFrame(step);
+        } else {
+          endingFadeFrameRef.current = null;
+          audio.pause();
+          setIsPlaying(false);
+        }
+      }
+
+      endingFadeFrameRef.current = requestAnimationFrame(step);
+    },
+    [getActiveAudio]
+  );
 
   const duckVolume = useCallback(
     (factor: number) => {
@@ -257,6 +301,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   // 첫 사용자 상호작용(click/touchstart/keydown) 때 다시 시도한 뒤 성공하면 리스너를 정리한다.
   // 최초 마운트 시점의 pathname에 해당하는 트랙만 재생을 시도한다.
   useEffect(() => {
+    // contribute 모드에서는 BGM을 전혀 재생하지 않는다(자동재생 시도조차 하지 않음).
+    if (isContributeMode) return;
     if (readPlayPreference() === "off") return;
 
     let isMounted = true;
@@ -309,6 +355,12 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const nextTrack = trackForPathname(pathname);
     const prevTrack = activeTrackRef.current;
     if (nextTrack === prevTrack) return;
+    // contribute 모드에서는 트랙 전환(페이드) 자체를 하지 않는다 - BGM을 전혀 재생하지
+    // 않으므로 여기서 재생을 새로 시작시킬 이유가 없다.
+    if (isContributeMode) {
+      activeTrackRef.current = nextTrack;
+      return;
+    }
 
     activeTrackRef.current = nextTrack;
 
@@ -413,7 +465,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         crossfadeFrameRef.current = null;
       }
     };
-  }, [pathname, getAudio]);
+  }, [pathname, getAudio, isContributeMode]);
 
   const value = useMemo(
     () => ({
@@ -426,6 +478,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       duckVolume,
       restoreVolume,
       ensurePlayback,
+      fadeOutAndStop,
     }),
     [
       isPlaying,
@@ -437,6 +490,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       duckVolume,
       restoreVolume,
       ensurePlayback,
+      fadeOutAndStop,
     ]
   );
 

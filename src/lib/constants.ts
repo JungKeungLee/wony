@@ -1,4 +1,5 @@
 import type { FooterLink, NavItem, PreviewItem } from "./types";
+import { getBaseSiteMode } from "./siteMode";
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "HOME", href: "/" },
@@ -63,6 +64,40 @@ export const HERO_IMAGE_FOCAL_POINT = "center";
  * 파일이 없거나 재생에 실패해도 Intro는 스마트폰 단계로 자연스럽게 건너뛴다.
  */
 export const INTRO_VIDEO_SRC = "/video/wony-intro.mp4";
+
+/**
+ * SURPRISE 페이지 맨 마지막(진짜 엔딩) 영상 경로. 파일은 나중에 이 경로에 추가될
+ * 예정이며, 아직 없거나 재생에 실패해도 사이트 동작에는 영향이 없다(그 구간을
+ * 그냥 넘어간다).
+ */
+export const SURPRISE_ENDING_VIDEO_SRC = "/videos/surprise-ending.mp4";
+
+/**
+ * contribute(참여용 사전 공개) 모드의 참여 기간 표시 문구. 화면에는
+ * "참여 기간 {start} ~ {end}"처럼 작게만 보여준다. 정확한 날짜가 아직 정해지지
+ * 않아 일단 표시용 문자열로만 관리한다 - 날짜가 정해지면 이 두 값만 바꾸면 된다.
+ */
+export const CONTRIBUTE_DEADLINE = {
+  start: "2026.11.xx",
+  end: "2026.12.xx",
+};
+
+/**
+ * VIDEO 페이지의 "☆ 이 영상에 한 표" 버튼(성공 메시지, 투표 관련 안내 문구 등
+ * 투표 UI 전체)을 보여줄지 여부.
+ *
+ * - contribute 모드(NEXT_PUBLIC_SITE_MODE=contribute): 사전 공개 기간 동안의
+ *   참여 기능이라 기본적으로 켜진다.
+ * - public 모드(NEXT_PUBLIC_SITE_MODE=public, 연말 정식 공개): 투표 기간이
+ *   끝난 것으로 보고 항상 꺼진다. video_votes에 이미 쌓인 데이터는 지우지 않고
+ *   그대로 두며(운영자가 BEST 선정에 계속 참고할 수 있도록), 화면에서 투표
+ *   UI만 숨긴다.
+ *
+ * NEXT_PUBLIC_VIDEO_VOTING_ENABLED="false"로 두면 contribute 모드 중에도 수동으로
+ * 끌 수 있다(둘 중 하나라도 꺼짐 조건이면 숨김).
+ */
+export const VIDEO_VOTING_ENABLED =
+  getBaseSiteMode() === "contribute" && process.env.NEXT_PUBLIC_VIDEO_VOTING_ENABLED !== "false";
 
 /**
  * 페이지별 배경음악 경로.

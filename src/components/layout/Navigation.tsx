@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV_ITEMS } from "@/lib/constants";
+import { useSiteMode } from "@/context/SiteModeContext";
 import MusicToggle from "./MusicToggle";
 
 interface NavigationProps {
@@ -12,9 +13,18 @@ interface NavigationProps {
   revealDelay?: number;
 }
 
+/** contribute 모드에서 Navigation에 남겨둘 메뉴 라벨만 - 나머지(HOME/TIMELINE/
+ * ARCHIVE/STATISTICS)는 완전히 숨긴다. */
+const CONTRIBUTE_VISIBLE_LABELS = new Set(["LETTER", "FAN ART", "VIDEO"]);
+
 export default function Navigation({ revealDelay = 0 }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { isContributeMode } = useSiteMode();
+
+  const navItems = isContributeMode
+    ? NAV_ITEMS.filter((item) => CONTRIBUTE_VISIBLE_LABELS.has(item.label))
+    : NAV_ITEMS;
 
   return (
     <motion.header
@@ -33,7 +43,7 @@ export default function Navigation({ revealDelay = 0 }: NavigationProps) {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -47,7 +57,7 @@ export default function Navigation({ revealDelay = 0 }: NavigationProps) {
               </Link>
             );
           })}
-          <MusicToggle className="ml-4" />
+          {!isContributeMode && <MusicToggle className="ml-4" />}
         </nav>
 
         <button
@@ -80,7 +90,7 @@ export default function Navigation({ revealDelay = 0 }: NavigationProps) {
             className="overflow-hidden bg-bg-soft/95 backdrop-blur-md md:hidden"
           >
             <div className="flex flex-col gap-5 px-6 py-6">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -92,7 +102,7 @@ export default function Navigation({ revealDelay = 0 }: NavigationProps) {
                   {item.label}
                 </Link>
               ))}
-              <MusicToggle className="pt-2" />
+              {!isContributeMode && <MusicToggle className="pt-2" />}
             </div>
           </motion.nav>
         )}

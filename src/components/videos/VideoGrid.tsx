@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchApprovedVideos } from "@/lib/videos";
 import { toErrorMessage } from "@/lib/letters";
 import { MONTH_LABELS_EN, MONTH_LABELS_FULL } from "@/lib/videoCategory";
+import { useSiteMode } from "@/context/SiteModeContext";
 import type { VideoItem } from "@/lib/types";
 import VideoCard from "./VideoCard";
 import VideoModal from "./VideoModal";
@@ -14,6 +15,7 @@ import StatusToast from "@/components/ui/StatusToast";
 type Status = "loading" | "success" | "error";
 
 export default function VideoGrid() {
+  const { isContributeMode } = useSiteMode();
   const [status, setStatus] = useState<Status>("loading");
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -121,15 +123,21 @@ export default function VideoGrid() {
       <div className="flex flex-col items-center gap-5 px-6 py-24 text-center">
         <p className="font-serif-kr text-text-soft">
           아직 등록된 영상이 없습니다.
-          <br />
-          첫 번째 영상을 보내주세요.
+          {!isContributeMode && (
+            <>
+              <br />
+              첫 번째 영상을 보내주세요.
+            </>
+          )}
         </p>
-        <Link
-          href="/videos/write"
-          className="border border-text-soft/40 px-8 py-3 text-sm tracking-[0.2em] text-text transition-colors hover:border-pink hover:text-pink"
-        >
-          [ 영상 등록하기 ]
-        </Link>
+        {!isContributeMode && (
+          <Link
+            href="/videos/write"
+            className="border border-text-soft/40 px-8 py-3 text-sm tracking-[0.2em] text-text transition-colors hover:border-pink hover:text-pink"
+          >
+            [ 영상 등록하기 ]
+          </Link>
+        )}
       </div>
     );
   }

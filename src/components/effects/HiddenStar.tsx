@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useStarCollection, type StarId } from "@/context/StarCollectionContext";
+import { useSiteMode } from "@/context/SiteModeContext";
 import { useHasMounted } from "@/lib/useHasMounted";
 
 const DEBUG_STORAGE_KEY = "showSurpriseDebug";
@@ -32,10 +33,15 @@ interface HiddenStarProps {
  */
 export default function HiddenStar({ id, className = "" }: HiddenStarProps) {
   const { isCollected, collectStar } = useStarCollection();
+  const { isContributeMode } = useSiteMode();
   const hasMounted = useHasMounted();
   const collected = isCollected(id);
   const [justCollected, setJustCollected] = useState(false);
   const debugEnabled = hasMounted && isDebugDiamondsEnabled();
+
+  // 다이아 수집(SURPRISE로 가는 열쇠)은 정식 공개 전 이스터에그다 - contribute
+  // 모드에서는 아예 그리지 않는다.
+  if (isContributeMode) return null;
 
   // 이미 수집한 다이아는 해당 페이지에서 완전히 사라진다(다시 클릭되지 않는다).
   // 개발 debug 모드에서는 위치 확인을 위해 수집 여부와 무관하게 계속 보여준다.
