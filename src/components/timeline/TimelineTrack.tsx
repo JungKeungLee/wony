@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type ChangeEvent } from "react";
 import type { TimelineMonthData, TimelineImageRow } from "@/lib/types";
 import {
   deleteTimelineImage,
@@ -18,6 +18,7 @@ import ImageModal, { type ImageModalState } from "./ImageModal";
 import StatusToast from "@/components/ui/StatusToast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import HiddenStar from "@/components/effects/HiddenStar";
+import ChapterNote from "@/components/narrative/ChapterNote";
 
 /** Timeline 대표 이미지는 4:3 카드 비율에 맞춘다 (Archive/작은 이미지의 16:9와 다름). */
 const COVER_THUMBNAIL_OPTIONS = { width: 640, height: 480 };
@@ -215,21 +216,31 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
 
       <div className="flex flex-col gap-20 md:gap-28">
         {months.map((data, i) => (
-          <TimelineMonth
-            key={data.month}
-            data={data}
-            align={i % 2 === 0 ? "left" : "right"}
-            coverImage={coverImages.get(data.month)}
-            isUploadingCover={uploadingMonth === data.month}
-            onAddCoverPhoto={() => requestCoverPhoto(data.month)}
-            onDeleteCoverPhoto={() => setConfirmDeleteMonth(data.month)}
-            smallImages={smallImages.get(data.month) ?? []}
-            uploadingSmallSlot={
-              uploadingSmallSlot?.month === data.month ? uploadingSmallSlot.sortOrder : null
-            }
-            onAddSmallPhoto={(sortOrder) => requestSmallPhoto(data.month, sortOrder)}
-            onOpenImage={(images, index, alt) => setModal({ images, index, alt, month: data.month })}
-          />
+          <Fragment key={data.month}>
+            <TimelineMonth
+              data={data}
+              align={i % 2 === 0 ? "left" : "right"}
+              coverImage={coverImages.get(data.month)}
+              isUploadingCover={uploadingMonth === data.month}
+              onAddCoverPhoto={() => requestCoverPhoto(data.month)}
+              onDeleteCoverPhoto={() => setConfirmDeleteMonth(data.month)}
+              smallImages={smallImages.get(data.month) ?? []}
+              uploadingSmallSlot={
+                uploadingSmallSlot?.month === data.month ? uploadingSmallSlot.sortOrder : null
+              }
+              onAddSmallPhoto={(sortOrder) => requestSmallPhoto(data.month, sortOrder)}
+              onOpenImage={(images, index, alt) => setModal({ images, index, alt, month: data.month })}
+            />
+            {/* 정식 사이트 챕터 연출: 열두 달 중간쯤에서 한 번만 짧게 감성 문구를
+                끼워 넣는다(요청: "1~2회 정도"). contribute 모드에서는 이 페이지
+                자체가 접근 불가라 사실상 항상 아래 조건이지만, ChapterNote가
+                스스로도 한 번 더 판단한다. */}
+            {i === Math.floor(months.length / 2) - 1 && (
+              <ChapterNote
+                lines={["하루하루는 평범했지만,", "돌아보면 모두 하나의 이야기가 되었습니다."]}
+              />
+            )}
+          </Fragment>
         ))}
       </div>
 

@@ -20,8 +20,8 @@ export default function VideoCard({ video, delay = 0, onOpen }: VideoCardProps) 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 24, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.8, ease: "easeOut", delay }}
       className="group flex flex-col overflow-hidden border border-white/10 bg-bg-soft/50 transition-colors hover:border-pink/50"

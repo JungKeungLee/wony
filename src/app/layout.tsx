@@ -4,6 +4,7 @@ import { Noto_Sans_KR, Nanum_Myeongjo, Playfair_Display } from "next/font/google
 import { MusicProvider } from "@/context/MusicContext";
 import { StarCollectionProvider } from "@/context/StarCollectionContext";
 import { SiteModeProvider } from "@/context/SiteModeContext";
+import { CinematicTransitionProvider } from "@/context/CinematicTransitionContext";
 import { getBaseSiteMode, PREVIEW_COOKIE_NAME } from "@/lib/siteMode";
 import StarField from "@/components/effects/StarField";
 import StarProgressBadge from "@/components/effects/StarProgressBadge";
@@ -62,17 +63,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full bg-bg text-text">
         <SiteModeProvider effectiveMode={effectiveMode} isPreview={isPreview}>
-          <MusicProvider>
-            <StarCollectionProvider>
-              <StarField />
-              {children}
-              <Footer />
-              <StarProgressBadge />
-              <StarUnlockCelebration />
-              <YearEndCountdown />
-              <OperationTestSwitcher />
-            </StarCollectionProvider>
-          </MusicProvider>
+          <CinematicTransitionProvider>
+            <MusicProvider>
+              <StarCollectionProvider>
+                <StarField />
+                {children}
+                <Footer />
+                <StarProgressBadge />
+                <StarUnlockCelebration />
+                <YearEndCountdown />
+                <OperationTestSwitcher />
+              </StarCollectionProvider>
+            </MusicProvider>
+          </CinematicTransitionProvider>
         </SiteModeProvider>
       </body>
     </html>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { ArchiveItem, ArchiveMonth } from "@/data/archive";
 import type { ArchiveComment, ArchiveEntryInput, ArchiveEntryRow, ArchiveImage } from "@/lib/types";
 import {
@@ -30,6 +30,8 @@ import ArchiveImageModal from "./ArchiveImageModal";
 import ArchiveEntryForm, { type ArchiveEntryMedia } from "./ArchiveEntryForm";
 import StatusToast from "@/components/ui/StatusToast";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import ChapterNote from "@/components/narrative/ChapterNote";
+import RandomMemoryTeaser from "@/components/home/RandomMemoryTeaser";
 
 const MONTH_LABELS = [
   "JANUARY",
@@ -391,21 +393,29 @@ export default function ArchiveContent() {
 
       {entriesStatus === "success" &&
         months.map((monthData, i) => (
-          <ArchiveMonthSection
-            key={monthData.month}
-            {...monthData}
-            isFirst={i === 0}
-            images={images}
-            uploadingId={uploadingId}
-            comments={comments}
-            onAddPhoto={requestPhoto}
-            onOpenPhoto={setViewingArchiveId}
-            onSaveComment={handleSaveComment}
-            onDeleteComment={handleDeleteComment}
-            onEditEntry={openEditEntry}
-            onDeleteEntry={setConfirmDeleteEntryId}
-          />
+          <Fragment key={monthData.month}>
+            <ArchiveMonthSection
+              {...monthData}
+              isFirst={i === 0}
+              images={images}
+              uploadingId={uploadingId}
+              comments={comments}
+              onAddPhoto={requestPhoto}
+              onOpenPhoto={setViewingArchiveId}
+              onSaveComment={handleSaveComment}
+              onDeleteComment={handleDeleteComment}
+              onEditEntry={openEditEntry}
+              onDeleteEntry={setConfirmDeleteEntryId}
+            />
+            {/* 정식 사이트 챕터 연출: 6월 자리(중간쯤)에서 한 번만 감성 문구를
+                끼워 넣는다. ChapterNote가 contribute 모드에서는 스스로 숨는다. */}
+            {i === 5 && (
+              <ChapterNote lines={["어떤 기억은", "짧은 한 장면만으로도 다시 떠오릅니다."]} />
+            )}
+          </Fragment>
         ))}
+
+      {entriesStatus === "success" && <RandomMemoryTeaser />}
 
       <ArchiveImageModal
         archiveId={viewingArchiveId}

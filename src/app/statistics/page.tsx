@@ -6,6 +6,8 @@ import RecordCard from "@/components/statistics/RecordCard";
 import QuoteOfTheYear from "@/components/statistics/QuoteOfTheYear";
 import TopList from "@/components/statistics/TopList";
 import MonthlyBarChart from "@/components/statistics/MonthlyBarChart";
+import ChapterNote from "@/components/narrative/ChapterNote";
+import NextChapter from "@/components/narrative/NextChapter";
 import { STATISTICS_DATA } from "@/data/statistics";
 
 export const metadata: Metadata = {
@@ -39,6 +41,8 @@ export default function StatisticsPage() {
           </div>
         </section>
 
+        <ChapterNote lines={["숫자로 남겨놓고 보니", "참 많은 시간을 함께했습니다."]} />
+
         <section className="mx-auto max-w-4xl px-6 pb-20">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {records.map((record, i) => (
@@ -61,10 +65,19 @@ export default function StatisticsPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-4xl px-6 pb-32">
+        <section className="mx-auto max-w-4xl px-6 pb-16">
           <SectionLabel>MONTHLY</SectionLabel>
           <MonthlyBarChart data={monthly} />
         </section>
+
+        <ChapterNote lines={["하지만 모든 기억을", "숫자로 표현할 수 있는 것은 아니었습니다."]} />
+
+        <NextChapter
+          message={["숫자로 남지 않은 이야기들은\n말과 마음으로 남았습니다."]}
+          title="남겨진 마음 읽어보기"
+          href="/letters"
+          transitionPhrase="이번에는 조금 천천히 읽어봅니다."
+        />
       </main>
     </>
   );

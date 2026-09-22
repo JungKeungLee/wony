@@ -11,6 +11,7 @@ import VideoCard from "./VideoCard";
 import VideoModal from "./VideoModal";
 import BestClipsSection from "./BestClipsSection";
 import StatusToast from "@/components/ui/StatusToast";
+import ChapterNote from "@/components/narrative/ChapterNote";
 
 type Status = "loading" | "success" | "error";
 
@@ -206,6 +207,19 @@ export default function VideoGrid() {
       )}
 
       <BestClipsSection videos={bestVideos} onOpen={(video) => openVideo(bestVideos, video)} />
+
+      {/* 일반 메뉴 흐름의 마지막 챕터 - SURPRISE의 존재를 암시하는 문구는 절대
+          쓰지 않는다. 다이아 7개를 다 모았는지 여부와 무관하게 항상 같은 조용한
+          마무리 문구만 보여준다(ChapterNote가 contribute 모드에서는 스스로 숨는다). */}
+      <ChapterNote
+        lines={[
+          "2026년의 이야기를",
+          "끝까지 함께해주셔서 감사합니다.",
+          "",
+          "이 순간들이 오래도록",
+          "좋은 기억으로 남았으면 좋겠습니다. ✦",
+        ]}
+      />
 
       <VideoModal
         videos={modalList}

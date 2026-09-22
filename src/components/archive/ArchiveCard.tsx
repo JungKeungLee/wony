@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import type { ArchiveItem } from "@/data/archive";
 import type { ArchiveComment, ArchiveImage } from "@/lib/types";
 import ArchivePhotoSlot from "./ArchivePhotoSlot";
@@ -30,7 +33,12 @@ export default function ArchiveCard({
   onDeleteEntry,
 }: ArchiveCardProps) {
   return (
-    <div className="flex flex-col gap-3 border-b border-white/10 py-5 sm:py-6">
+    <motion.div
+      initial={{ opacity: 0, y: 14, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+      className="flex flex-col gap-3 border-b border-white/10 py-5 sm:py-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-6">
         <div className="order-1 flex shrink-0 flex-col gap-1 sm:w-40 md:w-44">
           <span className="font-display text-sm tracking-[0.1em] text-star sm:text-base">
@@ -92,6 +100,6 @@ export default function ArchiveCard({
           [ 삭제 ]
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
