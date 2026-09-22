@@ -66,11 +66,12 @@ export const HERO_IMAGE_FOCAL_POINT = "center";
 export const INTRO_VIDEO_SRC = "/video/wony-intro.mp4";
 
 /**
- * SURPRISE 페이지 맨 마지막(진짜 엔딩) 영상 경로. 파일은 나중에 이 경로에 추가될
- * 예정이며, 아직 없거나 재생에 실패해도 사이트 동작에는 영향이 없다(그 구간을
- * 그냥 넘어간다).
+ * SURPRISE 페이지 맨 마지막(진짜 엔딩) 영상 경로. 실제 파일은
+ * public/video/surprise-ending.mp4(INTRO_VIDEO_SRC와 같은 폴더)에 있다 - "videos"가
+ * 아니라 "video" 단수형이니 착각하지 않는다. 파일이 없거나 재생에 실패해도 사이트
+ * 동작에는 영향이 없다(그 구간을 그냥 넘어간다).
  */
-export const SURPRISE_ENDING_VIDEO_SRC = "/videos/surprise-ending.mp4";
+export const SURPRISE_ENDING_VIDEO_SRC = "/video/surprise-ending.mp4";
 
 /**
  * contribute(참여용 사전 공개) 모드의 참여 기간 표시 문구. 화면에는
