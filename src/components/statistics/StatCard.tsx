@@ -46,14 +46,20 @@ export default function StatCard({
           이 영역의 높이를 공통으로 고정해, 숫자의 시각적 중심이 카드마다 항상
           같은 높이에 오도록 한다. */}
       <div className="flex min-h-[3rem] w-full items-center justify-center sm:min-h-[4.5rem]">
-        <p
-          className={`font-display text-text ${
-            featured ? "text-5xl sm:text-7xl" : "text-3xl sm:text-4xl"
-          }`}
-        >
-          {display.toFixed(decimals)}
-          {suffix}
-        </p>
+        {featured ? (
+          <p className="font-display text-5xl text-text sm:text-7xl">
+            {display.toFixed(decimals)}
+            {suffix}
+          </p>
+        ) : (
+          // 일반(non-featured) 카드는 기존보다 한 단계 큰 크기를 써서 featured
+          // 카드 옆에 있어도 존재감이 약해 보이지 않게 한다. 단위(h)는 숫자보다
+          // 살짝 작게 둬서 숫자 쪽이 여전히 시각적으로 가장 두드러지게 한다.
+          <p className="font-display text-4xl text-text sm:text-5xl">
+            {display.toFixed(decimals)}
+            {suffix && <span className="text-2xl sm:text-3xl">{suffix}</span>}
+          </p>
+        )}
       </div>
       {/* label도 featured 여부에 따라 글자 크기가 미세하게 달라(11px vs xs/sm)
           같은 이유로 높이를 고정해 정렬을 맞춘다. */}
