@@ -3,13 +3,6 @@ export interface NavItem {
   href: string;
 }
 
-export interface PreviewItem {
-  index: string;
-  title: string;
-  description: string;
-  href: string;
-}
-
 export interface TimelineMonthData {
   /** 1~12 */
   month: number;

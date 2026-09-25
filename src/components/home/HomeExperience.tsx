@@ -1,6 +1,5 @@
 import Navigation from "@/components/layout/Navigation";
 import Hero from "@/components/hero/Hero";
-import PreviewSection from "@/components/sections/PreviewSection";
 import RandomMemoryTeaser from "@/components/home/RandomMemoryTeaser";
 import NextChapter from "@/components/narrative/NextChapter";
 
@@ -13,7 +12,6 @@ export default function HomeExperience() {
       <Navigation revealDelay={NAV_REVEAL_DELAY} />
       <main>
         <Hero />
-        <PreviewSection />
         <RandomMemoryTeaser />
         <NextChapter
           message={["2026년,\n우리에게는 참 많은 순간들이 있었습니다.", "그 이야기를 처음부터 다시 따라가볼까요?"]}
