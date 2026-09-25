@@ -22,6 +22,10 @@ import AwardsFinale from "./AwardsFinale";
  */
 export default function AwardsExperience() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
+  // 오프닝이 화면을 덮고 있는 동안 BestVideoAward의 발표 타이머가 몰래 진행돼
+  // "3위가 안 보이고 2위부터 보인다"는 문제가 있었다 - 오프닝이 완전히 사라진
+  // 뒤에야 발표 시퀀스를 시작하도록 이 상태를 넘겨준다.
+  const [openingDone, setOpeningDone] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,9 +45,9 @@ export default function AwardsExperience() {
 
   return (
     <main className="relative bg-bg">
-      <AwardsOpening />
+      <AwardsOpening onComplete={() => setOpeningDone(true)} />
 
-      <BestVideoAward videos={videos} />
+      <BestVideoAward videos={videos} openingDone={openingDone} />
 
       <ChapterNote lines={["2026년에는", "참 많은 순간들이 있었습니다."]} />
 

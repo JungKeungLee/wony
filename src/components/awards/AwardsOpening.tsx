@@ -18,14 +18,20 @@ const STARS = Array.from({ length: STAR_COUNT }, (_, i) => ({
   delay: pseudoRandom(i * 4.1 + 2) * 0.4,
 }));
 
+interface AwardsOpeningProps {
+  /** 오프닝이 완전히 사라진 시점(화면이 실제로 보이기 시작하는 시점)에 호출된다.
+   * BestVideoAward 등 뒤에 있는 발표 연출이 오프닝이 화면을 덮고 있는 동안
+   * 몰래 진행되지 않도록, 이 콜백이 오기 전까지는 타이머를 시작하지 않아야 한다. */
+  onComplete?: () => void;
+}
+
 /**
  * /awards 진입 시 아주 짧게(약 2.2~2.8초) 재생되는 오프닝. 어두운 네이비 배경 ->
  * 희미한 별빛 + 은은한 금빛 spotlight -> "WONY / AWARDS / 2026" -> 짧은 태그라인 ->
- * 작은 캡션 순으로 나타난 뒤 스스로 fade-out되며 사라진다. SurpriseOpening과 달리
- * 뒤에 있는 본문이 이미 마운트돼 있고, 이 오프닝은 그 위에 잠깐 얹히는 오버레이일
- * 뿐이라 onComplete 콜백 없이 스스로 마운트/언마운트를 관리한다.
+ * 작은 캡션 순으로 나타난 뒤 스스로 fade-out되며 사라진다. 뒤에 있는 본문은 이미
+ * 마운트돼 있고, 이 오프닝은 그 위에 잠깐 얹히는 오버레이일 뿐이다.
  */
-export default function AwardsOpening() {
+export default function AwardsOpening({ onComplete }: AwardsOpeningProps) {
   const prefersReducedMotion = useReducedMotion();
   const [hiding, setHiding] = useState(false);
   const [mounted, setMounted] = useState(true);
@@ -45,11 +51,15 @@ export default function AwardsOpening() {
     const hideDelay = prefersReducedMotion ? 200 : 2200;
     const unmountDelay = prefersReducedMotion ? 500 : 2800;
     const hideTimer = window.setTimeout(() => setHiding(true), hideDelay);
-    const unmountTimer = window.setTimeout(() => setMounted(false), unmountDelay);
+    const unmountTimer = window.setTimeout(() => {
+      setMounted(false);
+      onComplete?.();
+    }, unmountDelay);
     return () => {
       window.clearTimeout(hideTimer);
       window.clearTimeout(unmountTimer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefersReducedMotion]);
 
   if (!mounted) return null;
