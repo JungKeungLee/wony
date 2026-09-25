@@ -51,12 +51,12 @@ export const SURPRISE_ENDING_VIDEO_SRC = "/video/surprise-ending.mp4";
 
 /**
  * contribute(참여용 사전 공개) 모드의 참여 기간 표시 문구. 화면에는
- * "참여 기간 {start} ~ {end}"처럼 작게만 보여준다. 정확한 날짜가 아직 정해지지
- * 않아 일단 표시용 문자열로만 관리한다 - 날짜가 정해지면 이 두 값만 바꾸면 된다.
+ * "참여 기간 {start} ~ {end}"처럼 작게만 보여준다. 날짜가 바뀌면 이 두 값만
+ * 바꾸면 된다.
  */
 export const CONTRIBUTE_DEADLINE = {
-  start: "2026.11.xx",
-  end: "2026.12.xx",
+  start: "2026.11.01",
+  end: "2026.12.01",
 };
 
 /**
