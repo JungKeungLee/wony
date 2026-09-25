@@ -25,6 +25,10 @@ interface SurpriseEndingVideoProps {
    * 세로 중심 부근에 들어오는 순간을 기준으로 엔딩을 시작한다 - 페이지 맨
    * 아래까지 내려갈 필요는 없다. */
   finalMessageRef: RefObject<HTMLElement | null>;
+  /** Intro/사진 몽타주가 모두 끝난 뒤에만 true - false인 동안은(마운트 직후 포함)
+   * 중심 도달 여부를 절대 확인하지 않는다. "/surprise 진입 자체"가 영상 시작
+   * 조건이 되는 것을 막기 위한 게이트다. */
+  armed: boolean;
 }
 
 /** el의 세로 중심이 viewport 세로 중심에 얼마나 가까운지 확인한다(useAutoScroll의
@@ -61,8 +65,12 @@ function isNearViewportCenter(el: HTMLElement): boolean {
  * 페이지당(이 컴포넌트가 마운트돼 있는 동안) 딱 한 번만 트리거된다 - 스크롤을
  * 위아래로 왔다 갔다 해도, 제목이 다시 중심 부근에 들어와도 처음부터 다시
  * 재생되지 않는다.
+ *
+ * armed prop이 true가 되기 전(Intro/사진 몽타주 진행 중, 마운트 직후 포함)에는
+ * 중심 도달 여부를 아예 확인하지 않는다 - "/surprise 진입" 자체가 영상 시작
+ * 조건이 되지 않게 막기 위한 게이트다.
  */
-export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingVideoProps) {
+export default function SurpriseEndingVideo({ finalMessageRef, armed }: SurpriseEndingVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const { fadeOutAndStop } = useMusic();
@@ -78,8 +86,15 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
   // 때마다 확인한다(useAutoScroll이 같은 조건으로 자동 스크롤을 멈추는 것과는
   // 독립적으로 동작한다 - 자동 스크롤이 비활성화된 경우나 사용자가 직접 스크롤해서
   // 도달한 경우에도 똑같이 동작해야 하기 때문이다).
+  //
+  // armed가 true가 되기 전(= Intro/사진 몽타주가 끝나기 전, 마운트 직후 포함)에는
+  // 이 확인 자체를 절대 시작하지 않는다. 예전에는 마운트되자마자 한 번 즉시
+  // 확인했는데, 그것이 "/surprise 진입 자체가 영상 시작 조건"이 되어버리는
+  // 원인이었다 - 브라우저/라우터가 이전 스크롤 위치를 복원해 "See you in 2027 ✦"가
+  // 이미 화면 중심 부근에 있는 상태로 마운트되면, Intro/몽타주를 건너뛰고 영상이
+  // 곧바로 재생돼버렸다.
   useEffect(() => {
-    if (hasTriggeredRef.current) return;
+    if (!armed || hasTriggeredRef.current) return;
 
     let rafId: number | null = null;
 
@@ -100,7 +115,9 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
       rafId = requestAnimationFrame(checkCenter);
     }
 
-    // 마운트 시점에 이미 중심 부근일 수도 있으니 한 번 즉시 확인한다.
+    // armed가 막 true로 바뀐 시점에 이미 중심 부근일 수도 있으니 한 번 확인한다
+    // (이 시점은 Intro/몽타주가 실제로 끝난 뒤라, 마운트 직후의 복원된 스크롤
+    // 위치 때문에 잘못 트리거되는 문제와는 다르다).
     checkCenter();
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
@@ -111,7 +128,7 @@ export default function SurpriseEndingVideo({ finalMessageRef }: SurpriseEndingV
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [armed]);
 
   // "holding" 상태로 잠깐(약 0.5초) 기존 화면을 더 보여준 뒤 영상 재생 단계로 넘어간다.
   useEffect(() => {
