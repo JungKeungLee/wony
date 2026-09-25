@@ -497,16 +497,18 @@ export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: L
                               <p className="mt-4 text-right text-xs text-[#a85a6b]">{deleteError}</p>
                             )}
 
-                            <div className="mt-6 flex justify-end gap-3 border-t border-[#cbb383]/50 pt-5">
-                              <button
-                                type="button"
-                                onClick={startEditing}
-                                className="border border-[#cbb383] px-5 py-2 text-xs tracking-[0.15em] text-[#8a7455] transition-colors hover:border-[#6b5a3f] hover:text-[#3e2f1f]"
-                              >
-                                수정
-                              </button>
-                              {/* 운영 테스트 전용 구분: 삭제는 관리자 화면에서만 보인다. */}
-                              {!isContributeMode && (
+                            {/* 운영 테스트 전용 구분: 수정/삭제는 관리자 화면에서만 보인다.
+                                고객 화면에서는 이 블록 자체가 렌더링되지 않아, 수정 버튼도
+                                수정 화면 진입 경로도 전혀 존재하지 않는다. */}
+                            {!isContributeMode && (
+                              <div className="mt-6 flex justify-end gap-3 border-t border-[#cbb383]/50 pt-5">
+                                <button
+                                  type="button"
+                                  onClick={startEditing}
+                                  className="border border-[#cbb383] px-5 py-2 text-xs tracking-[0.15em] text-[#8a7455] transition-colors hover:border-[#6b5a3f] hover:text-[#3e2f1f]"
+                                >
+                                  수정
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => setConfirmOpen(true)}
@@ -514,8 +516,8 @@ export default function LetterModal({ letter, onClose, onUpdated, onDeleted }: L
                                 >
                                   삭제
                                 </button>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         )
                       )}

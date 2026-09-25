@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { submitLetter, toErrorMessage } from "@/lib/letters";
 import { getMissingSupabaseEnvVars, isSupabaseConfigured } from "@/lib/supabase";
+import { useSiteMode } from "@/context/SiteModeContext";
 
 const MAX_NICKNAME = 30;
 const MAX_CONTENT = 2000;
@@ -16,6 +17,9 @@ interface FieldErrors {
 }
 
 export default function LetterForm() {
+  // 운영 테스트 전용 구분: 고객 화면에서는 익명 작성 UI 자체를 렌더링하지 않는다
+  // (관리자 화면에서는 기존대로 유지 - 요청의 핵심은 "고객에게 보여주지 않는 것"이다).
+  const { isContributeMode } = useSiteMode();
   const [nickname, setNickname] = useState("");
   const [content, setContent] = useState("");
   const [message2027, setMessage2027] = useState("");
@@ -58,7 +62,9 @@ export default function LetterForm() {
         nickname: nickname.trim(),
         content: content.trim(),
         message_2027: message2027.trim(),
-        is_anonymous: isAnonymous,
+        // 고객 화면은 익명 선택 UI 자체가 없으므로 항상 false로 저장한다(체크박스가
+        // 렌더링되지 않아 isAnonymous가 바뀔 수도 없지만, 명시적으로 한 번 더 보장한다).
+        is_anonymous: isContributeMode ? false : isAnonymous,
       });
       setSubmitState("success");
     } catch (err) {
@@ -174,15 +180,19 @@ export default function LetterForm() {
         )}
       </div>
 
-      <label className="flex items-center gap-3 text-sm text-text-soft">
-        <input
-          type="checkbox"
-          checked={isAnonymous}
-          onChange={(e) => setIsAnonymous(e.target.checked)}
-          className="h-4 w-4 accent-pink"
-        />
-        익명으로 보내기
-      </label>
+      {/* 운영 테스트 전용 구분: 익명 작성은 고객 화면에서는 사용하지 않는다 -
+          관리자 화면에서는 기존대로 유지한다. */}
+      {!isContributeMode && (
+        <label className="flex items-center gap-3 text-sm text-text-soft">
+          <input
+            type="checkbox"
+            checked={isAnonymous}
+            onChange={(e) => setIsAnonymous(e.target.checked)}
+            className="h-4 w-4 accent-pink"
+          />
+          익명으로 보내기
+        </label>
+      )}
 
       {submitState === "error" && (
         <p className="border border-pink/30 bg-bg-soft px-4 py-3 text-xs text-pink/90">
