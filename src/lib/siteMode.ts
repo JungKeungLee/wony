@@ -32,6 +32,9 @@ export function getBaseSiteMode(): SiteMode {
  * /videos/write는 의도적으로 빠져 있다 - VIDEO는 운영자가 미리 등록하고 일반
  * 방문자는 조회·재생·투표만 하는 구조라서다(VideosHero의 "+ 영상 남기기" 버튼도
  * contribute 모드에서는 같은 이유로 숨긴다).
+ *
+ * /concert는 2026.09.30 실제 오프라인 콘서트 홍보 페이지라, 연말 "2026년 회고"
+ * 공개 여부와 무관하게 실시간으로 열려 있어야 해서 항상 포함한다.
  */
 export const CONTRIBUTE_ALLOWED_PATHS: readonly string[] = [
   "/",
@@ -40,6 +43,7 @@ export const CONTRIBUTE_ALLOWED_PATHS: readonly string[] = [
   "/fan-art",
   "/fan-art/write",
   "/videos",
+  "/concert",
   "/privacy",
   "/content-removal",
 ];

@@ -7,6 +7,20 @@
   --color-text-soft: #b8bbc7;
   --color-pink: #ffd9e2;
   --color-star: #ffe6a7;
+  /*
+   * GOOD BYE SUMMER(/concert) 전용 밝은 팔레트 - 다른 페이지는 여전히 위 기본
+   * 다크 톤 토큰만 쓴다. Nav/Footer 등 공통 컴포넌트는 그대로 다크 테마라
+   * ink/ink-soft는 "밝은 배경 위에 올라가는 텍스트" 전용으로만 새로 추가한다.
+   */
+  --color-cream: #fffaf3;
+  --color-ivory: #f8ecd9;
+  --color-lavender: #ece2fb;
+  --color-peach: #ffdec0;
+  --color-pale-yellow: #fff2c2;
+  --color-champagne: #c9a35c;
+  --color-gold-deep: #b8863a;
+  --color-ink: #45323f;
+  --color-ink-soft: #8d7b87;
 }
 
 @theme inline {
@@ -16,6 +30,15 @@
   --color-text-soft: var(--color-text-soft);
   --color-pink: var(--color-pink);
   --color-star: var(--color-star);
+  --color-cream: var(--color-cream);
+  --color-ivory: var(--color-ivory);
+  --color-lavender: var(--color-lavender);
+  --color-peach: var(--color-peach);
+  --color-pale-yellow: var(--color-pale-yellow);
+  --color-champagne: var(--color-champagne);
+  --color-gold-deep: var(--color-gold-deep);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
 
   --font-sans: var(--font-noto-sans-kr);
   --font-display: var(--font-playfair);
