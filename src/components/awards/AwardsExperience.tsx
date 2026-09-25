@@ -16,9 +16,12 @@ import AwardsFinale from "./AwardsFinale";
  * src/components/awards, src/data/awards.ts만 지우면 된다(기존 페이지 코드는
  * 전혀 참조하지 않는다).
  *
- * 순서: 오프닝 -> BEST VIDEO(기존 best_rank 재사용) -> 감성 문구 -> BEST CONTENT
- * -> BEST GAME -> 감성 문구 -> BEST COLLAB -> LEGENDARY MOMENT -> Grand Finale
- * (+ LETTER로 이어지는 CTA).
+ * 순서: 오프닝 -> BEST VIDEO(기존 best_rank 재사용) -> (NEXT AWARD 예고 ->)
+ * BEST CONTENT -> BEST GAME -> 감성 문구 -> BEST COLLAB -> LEGENDARY MOMENT ->
+ * Grand Finale(+ LETTER로 이어지는 CTA). BEST VIDEO의 1위 발표가 충분히 유지된
+ * 뒤, 사용자가 스크롤해서 BEST CONTENT에 들어오면 그 안에서 "NEXT AWARD ->
+ * BEST CONTENT OF THE YEAR" 예고가 시작된다(showNextAwardIntro) - BEST VIDEO
+ * 쪽에서 화면을 강제로 넘기지 않는다.
  */
 export default function AwardsExperience() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -49,17 +52,18 @@ export default function AwardsExperience() {
 
       <BestVideoAward videos={videos} openingDone={openingDone} />
 
-      <ChapterNote lines={["2026년에는", "참 많은 순간들이 있었습니다."]} />
-
       <AwardCategoryReveal
         category="BEST CONTENT OF THE YEAR"
         title={AWARDS_DATA.bestContent.title}
         description={AWARDS_DATA.bestContent.description}
+        showNextAwardIntro
+        mood="elegant"
       />
       <AwardCategoryReveal
         category="BEST GAME OF THE YEAR"
         title={AWARDS_DATA.bestGame.title}
         description={AWARDS_DATA.bestGame.description}
+        mood="playful"
       />
 
       <ChapterNote lines={["어떤 순간은 웃음으로,", "어떤 순간은 추억으로 남았습니다."]} />
@@ -68,11 +72,13 @@ export default function AwardsExperience() {
         category="BEST COLLAB OF THE YEAR"
         title={AWARDS_DATA.bestCollab.title}
         description={AWARDS_DATA.bestCollab.description}
+        mood="warm"
       />
       <AwardCategoryReveal
         category="LEGENDARY MOMENT"
         title={AWARDS_DATA.legendaryMoment.title}
         description={AWARDS_DATA.legendaryMoment.description}
+        mood="emotional"
       />
 
       <AwardsFinale />
