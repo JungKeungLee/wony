@@ -9,8 +9,8 @@ import {
   getWatchButtonLabel,
   resolveVideoThumbnail,
 } from "@/lib/videoPlatform";
-import { AWARDS_TEST_MODE } from "@/data/awards";
 import { useMusic } from "@/context/MusicContext";
+import { pickRankedVideos } from "./rankedVideos";
 
 type Stage =
   | "intro"
@@ -30,24 +30,45 @@ type Stage =
 
 const FINAL_STAGE: Stage = "first-reveal";
 
-/** 각 단계가 얼마나 유지된 뒤 다음 단계로 넘어가는지(ms). 순서대로 누적해서
- * 타이머를 건다. first-reveal은 더 이상 스스로 넘어가지 않고 그대로 유지된다 -
- * /awards, /videos 오버레이 양쪽 모두 이 속도를 그대로 공유한다(임의로 더
- * 빨라지지 않게 여기 한 곳에서만 관리). */
+/**
+ * 각 단계의 지속 시간(ms) - 나중에 속도를 조정할 때 이 값들만 바꾸면 된다.
+ * 3RD/2ND PLACE 라벨과 "AND THE BEST VIDEO..." 발표, 3-2-1 카운트다운은
+ * 명시적으로 2초씩 유지하도록 요청받았다("0.8/1.2/1.5초 등으로 줄이지 말 것").
+ */
+const INTRO_DURATION_MS = 1000;
+/** "3RD PLACE"/"2ND PLACE" 라벨만 단독으로 보이는 시간. */
+const RANK_TITLE_DURATION_MS = 2000;
+const THIRD_REVEAL_DURATION_MS = 2300;
+const SECOND_REVEAL_DURATION_MS = 2600;
+/** announcing 직전, 화면이 어두워지기 시작하는 도입 구간. */
+const DIM_LEAD_DURATION_MS = 600;
+/** "AND THE BEST VIDEO OF 2026 IS..." 유지 시간. */
+const ANNOUNCE_DURATION_MS = 2000;
+/** 3-2-1 각 숫자가 유지되는 시간. */
+const COUNTDOWN_DURATION_MS = 2000;
+/** "1"이 사라진 뒤 WINNER가 나타나기 전까지의 짧은 pause(요청: 0.5~0.8초). */
+const WINNER_PAUSE_MS = 600;
+const GLOW_DURATION_MS = 400;
+const WINNER_LABEL_DURATION_MS = 700;
+
+/** 각 단계가 얼마나 유지된 뒤 다음 단계로 넘어가는지. 순서대로 누적해서 타이머를
+ * 건다. first-reveal은 더 이상 스스로 넘어가지 않고 그대로 유지된다 - /awards,
+ * /videos 오버레이 양쪽 모두 이 속도를 그대로 공유한다(임의로 더 빨라지지
+ * 않게 여기 한 곳에서만 관리). */
 const STAGE_SEQUENCE: { stage: Stage; ms: number }[] = [
-  { stage: "intro", ms: 1000 },
-  { stage: "third-label", ms: 700 },
-  { stage: "third-reveal", ms: 2300 },
-  { stage: "second-label", ms: 700 },
-  { stage: "second-reveal", ms: 2600 },
-  { stage: "dim", ms: 600 },
-  { stage: "announcing", ms: 1100 },
-  { stage: "countdown-3", ms: 750 },
-  { stage: "countdown-2", ms: 750 },
-  { stage: "countdown-1", ms: 750 },
-  { stage: "count-pause", ms: 400 },
-  { stage: "glow", ms: 400 },
-  { stage: "winner-label", ms: 700 },
+  { stage: "intro", ms: INTRO_DURATION_MS },
+  { stage: "third-label", ms: RANK_TITLE_DURATION_MS },
+  { stage: "third-reveal", ms: THIRD_REVEAL_DURATION_MS },
+  { stage: "second-label", ms: RANK_TITLE_DURATION_MS },
+  { stage: "second-reveal", ms: SECOND_REVEAL_DURATION_MS },
+  { stage: "dim", ms: DIM_LEAD_DURATION_MS },
+  { stage: "announcing", ms: ANNOUNCE_DURATION_MS },
+  { stage: "countdown-3", ms: COUNTDOWN_DURATION_MS },
+  { stage: "countdown-2", ms: COUNTDOWN_DURATION_MS },
+  { stage: "countdown-1", ms: COUNTDOWN_DURATION_MS },
+  { stage: "count-pause", ms: WINNER_PAUSE_MS },
+  { stage: "glow", ms: GLOW_DURATION_MS },
+  { stage: "winner-label", ms: WINNER_LABEL_DURATION_MS },
   { stage: FINAL_STAGE, ms: 0 },
 ];
 
@@ -60,39 +81,6 @@ const DIM_STAGES: Stage[] = [
   "countdown-1",
   "count-pause",
 ];
-
-interface RankedVideos {
-  third: VideoItem | null;
-  second: VideoItem | null;
-  first: VideoItem | null;
-}
-
-function findRank(videos: VideoItem[], rank: 1 | 2 | 3): VideoItem | null {
-  return videos.find((v) => v.best_rank === rank) ?? null;
-}
-
-/**
- * AWARDS_TEST_MODE=true일 때만 쓰는 임시 데이터. videos.best_rank는 전혀
- * 보지 않고, 현재 등록된 영상 중 서로 다른 3개를 골라 3위/2위/1위 자리에
- * 각각 매핑한다 - 화면/연출 확인용이라 실제 Supabase 데이터는 손대지 않는다.
- * AWARDS_TEST_MODE=false면 실제 best_rank(3=3위, 2=2위, 1=WINNER)를 그대로 쓴다.
- */
-function pickTestVideos(videos: VideoItem[]): RankedVideos {
-  return {
-    third: videos[0] ?? null,
-    second: videos[1] ?? null,
-    first: videos[2] ?? null,
-  };
-}
-
-function pickRankedVideos(videos: VideoItem[]): RankedVideos {
-  if (AWARDS_TEST_MODE) return pickTestVideos(videos);
-  return {
-    third: findRank(videos, 3),
-    second: findRank(videos, 2),
-    first: findRank(videos, 1),
-  };
-}
 
 type RankTier = "calm" | "strong" | "winner";
 
@@ -333,6 +321,11 @@ interface BestVideoAwardSequenceProps {
    * 돌아가기 ✦ ]" 버튼을 함께 보여주고, 그 버튼이 이 콜백을 호출한다. 넘기지
    * 않으면(/awards 프로토타입) 버튼 없이 1위 발표 상태 그대로 유지된다. */
   onClose?: () => void;
+  /** stage가 처음 first-reveal(1위 발표 완료)에 도달하는 순간 딱 한 번 호출된다.
+   * SKIP으로 건너뛴 경우도 "발표 완료 처리"로 보고 동일하게 호출한다. 시상식
+   * 도중 onClose로 중간에 닫힌 경우에는 호출되지 않는다 - /videos가 이 신호로
+   * "이번 세션에 결과를 봤는지"를 기억해 TOP 3 결과를 보여줄지 판단한다. */
+  onCompleted?: () => void;
 }
 
 /**
@@ -358,12 +351,24 @@ interface BestVideoAwardSequenceProps {
  * 오버레이를 닫았다가 "다시 보기"로 재실행) 모든 state/ref가 초기값으로
  * 자연스럽게 리셋된다.
  */
-export default function BestVideoAwardSequence({ videos, active, onClose }: BestVideoAwardSequenceProps) {
+export default function BestVideoAwardSequence({
+  videos,
+  active,
+  onClose,
+  onCompleted,
+}: BestVideoAwardSequenceProps) {
   const prefersReducedMotion = useReducedMotion();
   const [stage, setStage] = useState<Stage>(prefersReducedMotion ? FINAL_STAGE : "intro");
   const [isPlaybackOpen, setIsPlaybackOpen] = useState(false);
   const hasStartedRef = useRef(false);
   const timerIdsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    if (stage === FINAL_STAGE) onCompleted?.();
+    // onCompleted는 매 렌더 새 함수일 수 있어 deps에 넣지 않는다 - stage가
+    // first-reveal이 되는 그 순간에만 한 번 호출되면 된다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage]);
 
   function clearAllTimers() {
     timerIdsRef.current.forEach((id) => window.clearTimeout(id));

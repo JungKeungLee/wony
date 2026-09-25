@@ -91,14 +91,6 @@ export default function VideoGrid() {
       .map(([month, items]) => ({ month, items }));
   }, [filtered]);
 
-  const bestVideos = useMemo(
-    () =>
-      videos
-        .filter((v): v is VideoItem & { best_rank: number } => v.best_rank !== null)
-        .sort((a, b) => a.best_rank - b.best_rank),
-    [videos]
-  );
-
   const activeIndex = activeVideo ? modalList.findIndex((v) => v.id === activeVideo.id) : null;
 
   if (status === "loading") {
@@ -206,11 +198,10 @@ export default function VideoGrid() {
         </div>
       )}
 
-      <BestClipsSection
-        videos={bestVideos}
-        allVideos={videos}
-        onOpen={(video) => openVideo(bestVideos, video)}
-      />
+      {/* modalList로 승인된 전체 목록을 넘긴다 - BestClipsSection이 보여주는
+          영상(테스트 모드에서는 실제 best_rank와 무관할 수 있다)이 항상 이
+          목록 안에 있어야 이전/다음 탐색이 정상 동작한다. */}
+      <BestClipsSection allVideos={videos} onOpen={(video) => openVideo(videos, video)} />
 
       {/* 일반 메뉴 흐름의 마지막 챕터 - SURPRISE의 존재를 암시하는 문구는 절대
           쓰지 않는다. 다이아 7개를 다 모았는지 여부와 무관하게 항상 같은 조용한

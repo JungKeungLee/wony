@@ -9,6 +9,9 @@ interface BestVideoAwardOverlayProps {
   videos: VideoItem[];
   open: boolean;
   onClose: () => void;
+  /** 1위 발표까지 정상적으로(또는 SKIP으로) 완료됐을 때 한 번 호출된다 - 도중에
+   * X로 닫으면 호출되지 않는다. /videos가 이 신호로 TOP 3 결과 공개 여부를 정한다. */
+  onCompleted?: () => void;
 }
 
 /**
@@ -25,7 +28,12 @@ interface BestVideoAwardOverlayProps {
  * 인스턴스가 마운트되며 stage/countdown/재생 상태가 전부 초기값으로 자연스럽게
  * 리셋된다 - 별도의 리셋 로직이 필요 없다.
  */
-export default function BestVideoAwardOverlay({ videos, open, onClose }: BestVideoAwardOverlayProps) {
+export default function BestVideoAwardOverlay({
+  videos,
+  open,
+  onClose,
+  onCompleted,
+}: BestVideoAwardOverlayProps) {
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -69,7 +77,12 @@ export default function BestVideoAwardOverlay({ videos, open, onClose }: BestVid
             <span className="font-display text-[10px] tracking-[0.4em] text-star/70">
               WONY AWARDS 2026
             </span>
-            <BestVideoAwardSequence videos={videos} active={open} onClose={onClose} />
+            <BestVideoAwardSequence
+              videos={videos}
+              active={open}
+              onClose={onClose}
+              onCompleted={onCompleted}
+            />
           </div>
         </motion.div>
       )}
