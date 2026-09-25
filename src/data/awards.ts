@@ -5,6 +5,15 @@ export interface AwardWinner {
   description: string;
 }
 
+/**
+ * true면 BEST VIDEO OF THE YEAR가 실제 best_rank 대신, 현재 등록된 영상 중
+ * 아무 3개를 3위/2위/1위 자리에 임시로 채워 발표 연출만 미리 확인할 수 있게
+ * 한다(videos 테이블의 best_rank 값은 이 상수와 무관하게 절대 건드리지
+ * 않는다 - 화면 표시만 바뀐다). 실제 1~3위가 정해지면 false로 바꾸면
+ * 기존 best_rank 데이터를 그대로 사용한다.
+ */
+export const AWARDS_TEST_MODE = true;
+
 interface AwardsData {
   bestContent: AwardWinner;
   bestGame: AwardWinner;
