@@ -12,9 +12,15 @@ interface BestClipCardProps {
   video: VideoItem;
   rank: 1 | 2 | 3;
   onOpen: () => void;
+  /** false면 VIDEO_VOTING_ENABLED와 무관하게 투표 버튼을 절대 보여주지 않는다.
+   * 시상식 발표가 끝난 뒤의 BEST #1~#3 "최종 결과" 카드는 투표 대상이 아니라
+   * 이미 선정이 끝난 결과라서, 관리자 Full Preview처럼 기본 사이트 모드와
+   * 실제 화면 모드가 다를 수 있는 상황에서도 투표 UI가 절대 새어 나오면 안
+   * 된다 - 기본값은 true(기존 동작 유지). */
+  showVoteButton?: boolean;
 }
 
-export default function BestClipCard({ video, rank, onOpen }: BestClipCardProps) {
+export default function BestClipCard({ video, rank, onOpen, showVoteButton = true }: BestClipCardProps) {
   const [hasError, setHasError] = useState(false);
   const thumbnail = resolveVideoThumbnail(video);
   const isLarge = rank === 1;
@@ -78,7 +84,7 @@ export default function BestClipCard({ video, rank, onOpen }: BestClipCardProps)
         </div>
       </button>
 
-      {VIDEO_VOTING_ENABLED && (
+      {showVoteButton && VIDEO_VOTING_ENABLED && (
         <div className={`px-4 ${isLarge ? "pb-5" : "pb-3"}`}>
           <VoteButton videoId={video.id} />
         </div>

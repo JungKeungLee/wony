@@ -104,12 +104,19 @@ export default function BestClipsSection({
               video={firstEntry.video}
               rank={firstEntry.rank}
               onOpen={() => onOpen(firstEntry.video)}
+              showVoteButton={false}
             />
           )}
           {rest.length > 0 && (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {rest.map(({ rank, video }) => (
-                <BestClipCard key={video.id} video={video} rank={rank} onOpen={() => onOpen(video)} />
+                <BestClipCard
+                  key={video.id}
+                  video={video}
+                  rank={rank}
+                  onOpen={() => onOpen(video)}
+                  showVoteButton={false}
+                />
               ))}
             </div>
           )}
