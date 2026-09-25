@@ -206,7 +206,11 @@ export default function VideoGrid() {
         </div>
       )}
 
-      <BestClipsSection videos={bestVideos} onOpen={(video) => openVideo(bestVideos, video)} />
+      <BestClipsSection
+        videos={bestVideos}
+        allVideos={videos}
+        onOpen={(video) => openVideo(bestVideos, video)}
+      />
 
       {/* 일반 메뉴 흐름의 마지막 챕터 - SURPRISE의 존재를 암시하는 문구는 절대
           쓰지 않는다. 다이아 7개를 다 모았는지 여부와 무관하게 항상 같은 조용한
