@@ -80,14 +80,14 @@ export default function Hero() {
         transition={t(TIMING.chrome)}
         className="absolute bottom-10 flex flex-col items-center gap-2 text-text-soft"
       >
-        <span className="text-[10px] tracking-[0.3em]">SCROLL</span>
+        <span className="text-[10px] tracking-[0.3em]">SCROLL TO BEGIN</span>
         <motion.span
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           aria-hidden
-          className="text-lg"
+          className="text-sm text-star"
         >
-          ↓
+          ✦
         </motion.span>
       </motion.div>
     </section>
