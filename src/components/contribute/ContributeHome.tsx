@@ -144,7 +144,7 @@ export default function ContributeHome() {
               정식 공개 전까지 사이트 링크와 내용을 외부에 공유하지 말아주세요.
             </p>
 
-            <p className="text-[10px] tracking-[0.1em] text-text-soft/40">
+            <p className="text-xs tracking-[0.15em] text-star/90 sm:text-sm">
               참여 기간 {CONTRIBUTE_DEADLINE.start} ~ {CONTRIBUTE_DEADLINE.end}
             </p>
           </motion.div>
