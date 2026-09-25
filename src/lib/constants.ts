@@ -9,7 +9,9 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "LETTER", href: "/letters" },
   { label: "FAN ART", href: "/fan-art" },
   { label: "VIDEO", href: "/videos" },
-  { label: "CONCERT", href: "/concert" },
+  // CONCERT 임시 비활성화 - /concert 페이지 자체도 접근을 막아뒀다(siteMode.ts,
+  // src/app/concert/page.tsx 참고). 다시 열 때 이 줄의 주석만 풀면 된다.
+  // { label: "CONCERT", href: "/concert" },
 ];
 
 export const INTRO_LINES: string[] = [

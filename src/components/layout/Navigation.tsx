@@ -14,8 +14,9 @@ interface NavigationProps {
 }
 
 /** contribute 모드에서 Navigation에 남겨둘 메뉴 라벨만 - 나머지(HOME/TIMELINE/
- * ARCHIVE/STATISTICS)는 완전히 숨긴다. */
-const CONTRIBUTE_VISIBLE_LABELS = new Set(["LETTER", "FAN ART", "VIDEO", "CONCERT"]);
+ * ARCHIVE/STATISTICS)는 완전히 숨긴다. CONCERT는 페이지 자체가 임시
+ * 비활성화(주석 처리)돼 있어 여기서도 뺐다 - 다시 열 때 함께 되돌리면 된다. */
+const CONTRIBUTE_VISIBLE_LABELS = new Set(["LETTER", "FAN ART", "VIDEO" /* , "CONCERT" */]);
 
 export default function Navigation({ revealDelay = 0 }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
