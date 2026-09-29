@@ -20,12 +20,12 @@ const REDUCED_PREVIEW_MS = 350;
 const REDUCED_EXPAND_MS = 450;
 
 /**
- * WONY 앱 탭 영역 - public/images/phone-home.png 안에서 "WONY" 아이콘+라벨이
- * 차지하는 위치를 이미지 전체(1024x1536) 대비 퍼센트로 잡은 값이다. 실제
- * 아이콘보다 살짝 넉넉하게 잡았다(요청: "아이콘 + label 영역 전체").
- * 이미지를 다른 파일로 교체하면 이 값도 다시 맞춰야 한다.
+ * WONY 앱 탭 영역 - phone-home.png(667x1407, 폰만 크롭된 버전) 안에서 "WONY"
+ * 아이콘+라벨이 차지하는 위치를 퍼센트로 잡은 값이다. 실제 아이콘보다 살짝
+ * 넉넉하게 잡았다(요청: "아이콘 + label 영역 전체"). 이미지를 다른 파일로
+ * 교체하면 이 값도 다시 맞춰야 한다.
  */
-const WONY_TAP_AREA = { left: "21%", top: "27.5%", width: "15%", height: "11.5%" };
+const WONY_TAP_AREA = { left: "7.5%", top: "27%", width: "20%", height: "11.5%" };
 
 /**
  * 오프닝의 스마트폰 단계. public/images/phone-home.png(완성된 스마트폰 HOME
@@ -106,7 +106,11 @@ export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
             : { duration: 0.7, ease: "easeOut" }
         }
         style={{ transformOrigin: "center center" }}
-        className="relative aspect-[1024/1536] w-[78vw] max-w-[300px] overflow-hidden sm:max-w-[360px]"
+        /* phone-home.png는 배경 여백 없이 스마트폰 기기만 꽉 차게 크롭한
+           이미지라(667x1407) 그 실제 비율을 그대로 쓴다 - 늘리거나 찌그러뜨리지
+           않는다. 이전(배경 여백이 포함된 원본)보다 폰이 훨씬 크고 선명하게
+           보인다. */
+        className="relative aspect-[667/1407] w-[86vw] max-w-[320px] overflow-hidden sm:max-w-[380px]"
       >
         {showPreviewScreen ? (
           /* WONY 앱이 열리는 순간의 짧은 미리보기 - 이미지 위가 아니라 화면
@@ -154,7 +158,7 @@ export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
               transition={
                 launchStep === "pressed" || launchStep === "opening"
                   ? { duration: 0.16, ease: "easeOut" }
-                  : { duration: 1.7, repeat: 1, repeatDelay: 0.9, ease: "easeInOut" }
+                  : { duration: 1.7, repeat: Infinity, repeatDelay: 0.9, ease: "easeInOut" }
               }
               className="absolute cursor-pointer rounded-2xl bg-transparent"
             />
