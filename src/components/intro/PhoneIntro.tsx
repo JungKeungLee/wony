@@ -11,17 +11,6 @@ interface PhoneIntroProps {
 
 type LaunchStep = "idle" | "pressed" | "opening" | "preview" | "expand";
 
-/** 눌러도 아무 반응 없는 장식용 앱들. WONY 앱 하나만 실제로 클릭 가능하다. */
-const DECOR_APPS = [
-  "✉",
-  "♪",
-  "◎",
-  "▧",
-  "⚙",
-  "✎",
-  "⌖",
-];
-
 const ARM_DELAY_MS = 500;
 const PRESS_MS = 130;
 const OPEN_MS = 170;
@@ -31,11 +20,20 @@ const REDUCED_PREVIEW_MS = 350;
 const REDUCED_EXPAND_MS = 450;
 
 /**
- * 오프닝의 스마트폰 단계. 검은색 프레임 + 겨울밤 Wallpaper + 장식용 앱 아이콘들 위에
- * WONY 앱 하나만 클릭할 수 있다. 클릭하면
- * 눌림 → 아이콘 확대 → 화면 안에 HOME Hero와 비슷한 미리보기 → 스마트폰 전체 확대
- * 순서로 이어지다가, 그 끝에서 onComplete를 호출해 실제 HOME Hero로 연결한다.
- * prefers-reduced-motion에서는 확대 대신 단순 fade로 같은 단계를 거친다.
+ * WONY 앱 탭 영역 - public/images/phone-home.png 안에서 "WONY" 아이콘+라벨이
+ * 차지하는 위치를 이미지 전체(1024x1536) 대비 퍼센트로 잡은 값이다. 실제
+ * 아이콘보다 살짝 넉넉하게 잡았다(요청: "아이콘 + label 영역 전체").
+ * 이미지를 다른 파일로 교체하면 이 값도 다시 맞춰야 한다.
+ */
+const WONY_TAP_AREA = { left: "21%", top: "27.5%", width: "15%", height: "11.5%" };
+
+/**
+ * 오프닝의 스마트폰 단계. public/images/phone-home.png(완성된 스마트폰 HOME
+ * 화면 이미지)를 그대로 보여주고, 그 위 WONY 아이콘 자리에만 투명한 클릭
+ * 영역을 얹는다 - 이미지를 HTML/CSS로 다시 그리지 않는다. 클릭하면
+ * 눌림 → 짧은 오프닝 → 화면 안에 HOME Hero와 비슷한 미리보기 → 스마트폰 전체
+ * 확대 순서로 이어지다가, 그 끝에서 onComplete를 호출해 실제 HOME Hero로
+ * 연결한다. prefers-reduced-motion에서는 확대 대신 단순 fade로 같은 단계를 거친다.
  */
 export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -78,12 +76,11 @@ export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
 
   const showPreviewScreen = launchStep === "preview" || launchStep === "expand";
   const expanding = launchStep === "expand";
-  const chromeVisible = launchStep !== "expand";
   const expandDurationSec = (prefersReducedMotion ? REDUCED_EXPAND_MS : EXPAND_MS) / 1000;
 
   const iconIdlePulse = armed && launchStep === "idle" && !prefersReducedMotion;
   const iconScale: number | number[] =
-    launchStep === "pressed" ? 0.88 : launchStep === "opening" ? 1.18 : iconIdlePulse ? [1, 1.06, 1] : 1;
+    launchStep === "pressed" ? 0.9 : launchStep === "opening" ? 1.08 : iconIdlePulse ? [1, 1.05, 1] : 1;
 
   return (
     <motion.div
@@ -109,105 +106,60 @@ export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
             : { duration: 0.7, ease: "easeOut" }
         }
         style={{ transformOrigin: "center center" }}
-        className="relative aspect-[9/19.5] w-[250px] overflow-hidden rounded-[2.75rem] border border-white/15 bg-black shadow-[0_0_60px_rgba(0,0,0,0.55)] sm:w-[280px]"
+        className="relative aspect-[1024/1536] w-[78vw] max-w-[300px] overflow-hidden sm:max-w-[360px]"
       >
-        {/* 상단 카메라 영역(장식용, Apple 노치를 그대로 흉내내지 않는 단순한 캡슐) */}
-        <motion.div
-          animate={{ opacity: chromeVisible ? 1 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="absolute left-1/2 top-2.5 z-20 h-1.5 w-14 -translate-x-1/2 rounded-full bg-black"
-        />
+        {showPreviewScreen ? (
+          /* WONY 앱이 열리는 순간의 짧은 미리보기 - 이미지 위가 아니라 화면
+             전체를 덮는 자체 배경으로 보여준다(이미지를 다시 그리지 않고,
+             이미지와 겹쳐 보이지도 않는다). */
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[radial-gradient(ellipse_at_50%_35%,rgba(255,217,226,0.1),transparent_55%),linear-gradient(180deg,#080b16_0%,#111627_60%,#080b16_100%)] px-4 text-center"
+          >
+            <span className="font-display text-2xl tracking-[0.08em] text-text">WONY</span>
+            <span className="font-display text-[8px] tracking-[0.3em] text-text-soft">
+              OUR MEMORIES OF 2026
+            </span>
+          </motion.div>
+        ) : (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- 완성된 스마트폰 HOME 화면 그래픽을 그대로 보여주는 정적 이미지 */}
+            <img
+              src="/images/phone-home.png"
+              alt="스마트폰 HOME 화면 - WONY 앱을 눌러 들어가세요"
+              className="absolute inset-0 h-full w-full select-none object-cover"
+              draggable={false}
+            />
 
-        {/* 상태바 */}
-        <motion.div
-          animate={{ opacity: chromeVisible ? 1 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 pt-4 text-[10px] text-text-soft/70"
-        >
-          <span>9:41</span>
-          <span className="tracking-[0.1em]">✦ ▂▄▆</span>
-        </motion.div>
-
-        {/* 화면 */}
-        <div className="absolute inset-0">
-          {showPreviewScreen ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[radial-gradient(ellipse_at_50%_35%,rgba(255,217,226,0.1),transparent_55%),linear-gradient(180deg,#080b16_0%,#111627_60%,#080b16_100%)] px-4 text-center"
-            >
-              <span className="font-display text-2xl tracking-[0.08em] text-text">WONY</span>
-              <span className="font-display text-[8px] tracking-[0.3em] text-text-soft">
-                OUR MEMORIES OF 2026
-              </span>
-            </motion.div>
-          ) : (
-            <div className="relative flex h-full w-full flex-col bg-[radial-gradient(ellipse_at_50%_20%,rgba(255,217,226,0.06),transparent_55%),linear-gradient(180deg,#0a0e1c_0%,#111627_55%,#080b16_100%)] px-5 pb-8 pt-16">
-              {/* 배경 별 몇 개 */}
-              <span className="pointer-events-none absolute left-8 top-24 h-1 w-1 rounded-full bg-star/70" />
-              <span className="pointer-events-none absolute right-10 top-32 h-[3px] w-[3px] rounded-full bg-star/50" />
-              <span className="pointer-events-none absolute left-16 top-44 h-[2px] w-[2px] rounded-full bg-star/60" />
-
-              <div className="grid flex-1 grid-cols-4 gap-4 content-start">
-                {DECOR_APPS.map((glyph, i) => (
-                  <div
-                    key={i}
-                    aria-hidden
-                    className="flex aspect-square items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sm text-text-soft/60"
-                  >
-                    {glyph}
-                  </div>
-                ))}
-
-                <motion.button
-                  type="button"
-                  onClick={handleAppClick}
-                  aria-label="WONY 앱 열기"
-                  animate={{
-                    scale: iconScale,
-                    boxShadow: iconIdlePulse
-                      ? [
-                          "0 0 0px rgba(255,230,167,0)",
-                          "0 0 16px rgba(255,230,167,0.5)",
-                          "0 0 0px rgba(255,230,167,0)",
-                        ]
-                      : "0 0 0px rgba(255,230,167,0)",
-                  }}
-                  transition={
-                    launchStep === "pressed" || launchStep === "opening"
-                      ? { duration: 0.16, ease: "easeOut" }
-                      : { duration: 1.7, repeat: 1, repeatDelay: 0.9, ease: "easeInOut" }
-                  }
-                  className="flex aspect-square flex-col items-center justify-center gap-0.5 rounded-xl border border-star/30 bg-gradient-to-b from-bg-soft to-bg text-star"
-                >
-                  <span className="text-[8px] font-semibold tracking-[0.12em]">WONY</span>
-                  <span aria-hidden className="text-sm leading-none">
-                    ✦
-                  </span>
-                </motion.button>
-              </div>
-
-              {armed && launchStep === "idle" && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="pt-4 text-center text-[10px] tracking-[0.1em] text-text-soft/60"
-                >
-                  한번 눌러볼까...?
-                </motion.p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 하단 홈 인디케이터 */}
-        <motion.div
-          animate={{ opacity: chromeVisible ? 1 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="absolute bottom-2 left-1/2 z-20 h-1 w-24 -translate-x-1/2 rounded-full bg-white/30"
-        />
+            {/* WONY 앱 위에만 얹는 투명 클릭 영역 - 이미지 자체는 건드리지 않고,
+                은은한 glow/hover/클릭 피드백만 이 영역에 적용한다. */}
+            <motion.button
+              type="button"
+              onClick={handleAppClick}
+              aria-label="WONY 앱 열기"
+              style={WONY_TAP_AREA}
+              whileHover={{ backgroundColor: "rgba(255,230,167,0.1)" }}
+              animate={{
+                scale: iconScale,
+                boxShadow: iconIdlePulse
+                  ? [
+                      "0 0 0px rgba(255,230,167,0)",
+                      "0 0 18px rgba(255,230,167,0.55)",
+                      "0 0 0px rgba(255,230,167,0)",
+                    ]
+                  : "0 0 0px rgba(255,230,167,0)",
+              }}
+              transition={
+                launchStep === "pressed" || launchStep === "opening"
+                  ? { duration: 0.16, ease: "easeOut" }
+                  : { duration: 1.7, repeat: 1, repeatDelay: 0.9, ease: "easeInOut" }
+              }
+              className="absolute cursor-pointer rounded-2xl bg-transparent"
+            />
+          </>
+        )}
       </motion.div>
     </motion.div>
   );
