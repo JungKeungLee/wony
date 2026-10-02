@@ -95,7 +95,9 @@ export default function StatCard({
           {label}
         </p>
       </div>
-      <p className="text-xs text-text-soft sm:text-sm">{description}</p>
+      {/* break-keep(word-break: keep-all)으로 한글 설명이 좁은 카드 폭에서
+          단어 중간("영상" -> "영"/"상")이 아니라 어절 단위로 줄바꿈되게 한다. */}
+      <p className="break-keep text-xs text-text-soft sm:text-sm">{description}</p>
     </motion.div>
   );
 }

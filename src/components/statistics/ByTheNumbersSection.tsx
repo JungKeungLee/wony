@@ -17,7 +17,7 @@ const BY_THE_NUMBERS: HighlightStat[] = [
   {
     value: BROADCAST_STATS_2026.vodCount,
     label: "VODS",
-    description: "2026년 방송 다시보기 영상",
+    description: "2026년 방송 다시보기",
   },
   {
     value: BROADCAST_STATS_2026.broadcastDays,

@@ -29,7 +29,7 @@ export default function RankedRecordSection({
     <section className="mx-auto max-w-4xl px-6 py-16 sm:py-20">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-2 pb-10 text-center">
         <span className="font-display text-xs tracking-[0.4em] text-star">{title}</span>
-        <p className="font-serif-kr text-text-soft">{subtitle}</p>
+        <p className="font-serif-kr break-keep text-text-soft">{subtitle}</p>
       </div>
 
       <motion.div
@@ -54,7 +54,7 @@ export default function RankedRecordSection({
         ))}
       </motion.div>
 
-      <p className="mt-6 text-center text-[11px] text-text-soft/50">{footnote}</p>
+      <p className="mt-6 break-keep text-center text-[11px] text-text-soft/50">{footnote}</p>
     </section>
   );
 }

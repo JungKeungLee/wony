@@ -46,7 +46,7 @@ function MostActiveMonthSection() {
         {stats.mostActiveMonth.month}
       </p>
       <p className="font-display text-xl text-star sm:text-2xl">{Math.round(hours)} HOURS</p>
-      <p className="font-serif-kr text-text-soft">{stats.mostActiveMonth.descriptionKo}</p>
+      <p className="font-serif-kr break-keep text-text-soft">{stats.mostActiveMonth.descriptionKo}</p>
     </motion.section>
   );
 }
@@ -105,7 +105,7 @@ function LongestStreamHighlight() {
         {stats.longestStream.duration}
       </p>
       <p className="text-xs tracking-[0.15em] text-text-soft">{stats.longestStream.date}</p>
-      <p className="font-serif-kr whitespace-pre-line text-base italic leading-relaxed text-text sm:text-lg">
+      <p className="font-serif-kr whitespace-pre-line break-keep text-base italic leading-relaxed text-text sm:text-lg">
         {stats.longestStream.quote}
       </p>
     </motion.section>
@@ -116,7 +116,7 @@ function MiniRecord({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1 border border-white/10 bg-bg-soft/30 px-4 py-5 text-center">
       <p className="font-display text-xl text-text sm:text-2xl">{value}</p>
-      <p className="text-[11px] tracking-[0.1em] text-text-soft sm:text-xs">{label}</p>
+      <p className="break-keep text-[11px] tracking-[0.1em] text-text-soft sm:text-xs">{label}</p>
     </div>
   );
 }
@@ -135,7 +135,7 @@ function MoreRecordsEpilogue() {
     >
       <div className="mx-auto flex max-w-sm flex-col items-center gap-2 pb-6 text-center">
         <span className="font-display text-xs tracking-[0.3em] text-star">MORE RECORDS</span>
-        <p className="font-serif-kr text-sm text-text-soft">조금 더 자세히 보면</p>
+        <p className="font-serif-kr break-keep text-sm text-text-soft">조금 더 자세히 보면</p>
       </div>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MiniRecord value={`${stats.over10HoursCount}회`} label="10시간 이상 방송" />
