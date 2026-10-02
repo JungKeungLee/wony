@@ -222,3 +222,30 @@ export interface StatisticsData {
   quoteOfTheYear: QuoteOfTheYearData;
   monthly: MonthlyStat[];
 }
+
+/**
+ * "2026 방송 기록" 섹션 전용 집계 데이터. src/data/broadcastStats.ts의
+ * BROADCAST_STATS_2026 값만 바꾸면 카운트업 숫자/포맷된 문구 전체에 반영된다.
+ * 2025-12-31 방송은 2026년 집계에서 제외한 값이다.
+ */
+export interface BroadcastStats2026 {
+  vodCount: number;
+  broadcastDays: number;
+  totalHours: number;
+  totalMinutes: number;
+  totalSeconds: number;
+  averageHours: number;
+  averageMinutes: number;
+  averageSeconds: number;
+  longestHours: number;
+  longestMinutes: number;
+  longestSeconds: number;
+  /** 예: "2026.08.07" */
+  longestStreamDate: string;
+  longestStreamQuote: string;
+  shortestMinutes: number;
+  shortestSeconds: number;
+  over10HoursCount: number;
+  over12HoursCount: number;
+  under3HoursCount: number;
+}

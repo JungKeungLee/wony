@@ -6,6 +6,7 @@ import RecordCard from "@/components/statistics/RecordCard";
 import QuoteOfTheYear from "@/components/statistics/QuoteOfTheYear";
 import TopList from "@/components/statistics/TopList";
 import MonthlyBarChart from "@/components/statistics/MonthlyBarChart";
+import BroadcastRecordsSection from "@/components/statistics/BroadcastRecordsSection";
 import ChapterNote from "@/components/narrative/ChapterNote";
 import NextChapter from "@/components/narrative/NextChapter";
 import { STATISTICS_DATA } from "@/data/statistics";
@@ -69,6 +70,8 @@ export default function StatisticsPage() {
           <SectionLabel>MONTHLY</SectionLabel>
           <MonthlyBarChart data={monthly} />
         </section>
+
+        <BroadcastRecordsSection />
 
         <ChapterNote lines={["하지만 모든 기억을", "숫자로 표현할 수 있는 것은 아니었습니다."]} />
 
