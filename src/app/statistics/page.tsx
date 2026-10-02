@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Navigation from "@/components/layout/Navigation";
 import StatisticsHero from "@/components/statistics/StatisticsHero";
-import StatCard from "@/components/statistics/StatCard";
+import ByTheNumbersSection from "@/components/statistics/ByTheNumbersSection";
 import RecordCard from "@/components/statistics/RecordCard";
 import QuoteOfTheYear from "@/components/statistics/QuoteOfTheYear";
 import TopList from "@/components/statistics/TopList";
@@ -25,8 +25,7 @@ function SectionLabel({ children }: { children: string }) {
 }
 
 export default function StatisticsPage() {
-  const { highlights, records, topContents, topGames, quoteOfTheYear, monthly } =
-    STATISTICS_DATA;
+  const { records, topContents, topGames, quoteOfTheYear, monthly } = STATISTICS_DATA;
 
   return (
     <>
@@ -34,13 +33,7 @@ export default function StatisticsPage() {
       <main>
         <StatisticsHero />
 
-        <section className="mx-auto max-w-4xl px-6 pb-16">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {highlights.map((highlight, i) => (
-              <StatCard key={highlight.label} {...highlight} delay={i * 0.1} />
-            ))}
-          </div>
-        </section>
+        <ByTheNumbersSection />
 
         <ChapterNote lines={["숫자로 남겨놓고 보니", "참 많은 시간을 함께했습니다."]} />
 

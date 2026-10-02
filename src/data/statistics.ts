@@ -6,29 +6,10 @@ import type { StatisticsData } from "@/lib/types";
  * 숫자·문구를 바꾸고 싶으면 이 파일만 수정하면 된다.
  */
 export const STATISTICS_DATA: StatisticsData = {
-  highlights: [
-    {
-      value: 184,
-      label: "BROADCASTS",
-      description: "올해 방송 횟수",
-      featured: true,
-    },
-    {
-      value: 927,
-      suffix: "h",
-      label: "STREAMING TIME",
-      description: "총 방송 시간",
-      featured: true,
-    },
-    {
-      value: 5,
-      decimals: 1,
-      suffix: "h",
-      label: "AVERAGE LENGTH",
-      description: "평균 방송 시간",
-    },
-  ],
-
+  // BY THE NUMBERS 카드(VODS/DAYS ON AIR/TOGETHER/AVERAGE)는 이제 실제 2026년
+  // 집계 데이터인 src/data/broadcastStats.ts의 BROADCAST_STATS_2026에서
+  // 직접 만든다(src/app/statistics/page.tsx 참고) - 여기 있던 자리표시용
+  // 숫자(184/927h/5.0h)는 실제 데이터로 교체되어 더 이상 쓰지 않는다.
   records: [
     {
       title: "가장 오래 방송한 날",

@@ -2,88 +2,113 @@
 
 import { useEffect, useRef, useState } from "react";
 import { animate, motion, useInView, useReducedMotion } from "framer-motion";
-import BroadcastStatCard from "./BroadcastStatCard";
+import RankedRecordSection from "./RankedRecordSection";
 import { BROADCAST_STATS_2026, formatDuration } from "@/data/broadcastStats";
 
 const stats = BROADCAST_STATS_2026;
 
-const CARDS: {
-  index: string;
-  primaryValue: number;
-  secondaryValue?: number;
-  format: (primary: number, secondary: number) => string;
-  label: string;
-  description: string;
-}[] = [
-  {
-    index: "01",
-    primaryValue: stats.vodCount,
-    format: (v) => `${Math.round(v)}`,
-    label: "VOD",
-    description: "2026년에 남겨진 방송 기록",
-  },
-  {
-    index: "02",
-    primaryValue: stats.broadcastDays,
-    format: (v) => `${Math.round(v)}`,
-    label: "DAYS",
-    description: "워니가 방송을 켠 날",
-  },
-  {
-    index: "03",
-    primaryValue: stats.totalHours,
-    format: (v) => `${Math.round(v).toLocaleString("en-US")}`,
-    label: "HOURS",
-    description: "함께했던 총 방송시간",
-  },
-  {
-    index: "04",
-    primaryValue: stats.averageHours,
-    secondaryValue: stats.averageMinutes,
-    format: (h, m) => `${Math.round(h)}H ${Math.round(m)}M`,
-    label: "AVERAGE",
-    description: "한 번 방송을 켜면 평균 이만큼",
-  },
-  {
-    index: "05",
-    primaryValue: stats.longestHours,
-    secondaryValue: stats.longestMinutes,
-    format: (h, m) => `${Math.round(h)}H ${Math.round(m)}M`,
-    label: "LONGEST",
-    description: "가장 길었던 하루",
-  },
-];
-
-/** FEATURED RECORD용 "2,762" 단독 count-up - BroadcastStatCard의 카드 UI 없이
- * 숫자만 아주 크게 보여준다. 이 섹션에서 가장 중요한 숫자로 취급한다. */
-function FeaturedHoursNumber() {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+/** 카드 UI 없이 숫자만 크게 보여주는 간단한 count-up (MOST ACTIVE MONTH의
+ * 351, MARATHON STREAMS의 5). StatCard처럼 once-only + prefers-reduced-motion
+ * 안전 처리를 그대로 따르되, 바로 사용하기엔 StatCard의 카드 테두리 디자인이
+ * 이 두 섹션의 "스포트라이트" 느낌과 맞지 않아 가볍게 따로 뒀다. */
+function useBareCountUp(target: number, isInView: boolean) {
   const prefersReducedMotion = useReducedMotion();
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
     if (!isInView || prefersReducedMotion) return;
-    const controls = animate(0, stats.totalHours, {
-      duration: 2,
+    const controls = animate(0, target, {
+      duration: 1.6,
       ease: "easeOut",
       onUpdate: setDisplay,
     });
     return () => controls.stop();
-  }, [isInView, prefersReducedMotion]);
+  }, [isInView, target, prefersReducedMotion]);
 
-  // prefers-reduced-motion이면 애니메이션 없이 바로 최종 숫자를 보여준다 - 이
-  // 값은 effect에서 setState로 만들지 않고 렌더링 중 그냥 계산한다.
-  const shown = prefersReducedMotion ? (isInView ? stats.totalHours : 0) : display;
+  return prefersReducedMotion ? (isInView ? target : 0) : display;
+}
+
+function MostActiveMonthSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const hours = useBareCountUp(stats.mostActiveMonth.hours, isInView);
 
   return (
-    <p
+    <motion.section
       ref={ref}
-      className="font-display text-6xl tracking-wide text-text sm:text-8xl"
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : undefined}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      className="mx-auto flex max-w-2xl flex-col items-center gap-3 px-6 py-16 text-center sm:py-20"
     >
-      {Math.round(shown).toLocaleString("en-US")}
-      <span className="ml-2 text-3xl text-star sm:text-4xl">HOURS</span>
-    </p>
+      <span className="font-display text-xs tracking-[0.4em] text-star">MOST ACTIVE MONTH</span>
+      <p className="font-display text-5xl tracking-wide text-text sm:text-7xl">
+        {stats.mostActiveMonth.month}
+      </p>
+      <p className="font-display text-xl text-star sm:text-2xl">{Math.round(hours)} HOURS</p>
+      <p className="font-serif-kr text-text-soft">{stats.mostActiveMonth.descriptionKo}</p>
+    </motion.section>
+  );
+}
+
+function MarathonStreamsSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const count = useBareCountUp(stats.marathonStreams.length, isInView);
+
+  return (
+    <section ref={ref} className="mx-auto max-w-2xl px-6 py-16 text-center sm:py-20">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={isInView ? { opacity: 1, y: 0 } : undefined}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+        className="flex flex-col items-center gap-2 pb-10"
+      >
+        <span className="font-display text-xs tracking-[0.4em] text-star">MARATHON STREAMS</span>
+        <p className="font-display text-6xl text-text sm:text-8xl">{Math.round(count)}</p>
+        <p className="text-sm tracking-[0.2em] text-star">24H+ STREAMS</p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="flex flex-col gap-3"
+      >
+        {stats.marathonStreams.map((s) => (
+          <div
+            key={`${s.date}-${s.title}`}
+            className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-white/10 pb-3 text-left"
+          >
+            <span className="text-xs tracking-[0.1em] text-text-soft">{s.date}</span>
+            <span className="font-serif-kr break-keep text-sm text-text sm:text-base">{s.title}</span>
+            <span className="font-display text-sm text-star sm:text-base">{s.duration}</span>
+          </div>
+        ))}
+      </motion.div>
+    </section>
+  );
+}
+
+function LongestStreamHighlight() {
+  return (
+    <motion.section
+      initial={{ opacity: 0, scale: 0.97 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.9, ease: "easeOut" }}
+      className="mx-auto flex max-w-md flex-col items-center gap-4 border border-star/25 bg-bg-soft/40 px-6 py-16 text-center sm:py-20"
+    >
+      <span className="font-display text-xs tracking-[0.4em] text-star">LONGEST STREAM</span>
+      <p className="font-display text-6xl tracking-wide text-text drop-shadow-[0_0_18px_rgba(255,230,167,0.2)] sm:text-8xl">
+        {stats.longestStream.duration}
+      </p>
+      <p className="text-xs tracking-[0.15em] text-text-soft">{stats.longestStream.date}</p>
+      <p className="font-serif-kr whitespace-pre-line text-base italic leading-relaxed text-text sm:text-lg">
+        {stats.longestStream.quote}
+      </p>
+    </motion.section>
   );
 }
 
@@ -96,94 +121,67 @@ function MiniRecord({ value, label }: { value: string; label: string }) {
   );
 }
 
+/** 기존에 있던 보조 기록(10/12시간 이상, 3시간 미만, 최단 방송)을 조용한
+ * 에필로그 블록으로 유지한다 - 새 스토리텔링 흐름(월간 -> 콘텐츠 -> 게임 ->
+ * 마라톤 -> 최장 방송)을 방해하지 않도록 맨 마지막, 작게 배치했다. */
+function MoreRecordsEpilogue() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="mx-auto max-w-2xl px-6 pb-20 pt-10"
+    >
+      <div className="mx-auto flex max-w-sm flex-col items-center gap-2 pb-6 text-center">
+        <span className="font-display text-xs tracking-[0.3em] text-star">MORE RECORDS</span>
+        <p className="font-serif-kr text-sm text-text-soft">조금 더 자세히 보면</p>
+      </div>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <MiniRecord value={`${stats.over10HoursCount}회`} label="10시간 이상 방송" />
+        <MiniRecord value={`${stats.over12HoursCount}회`} label="12시간 이상 방송" />
+        <MiniRecord value={`${stats.under3HoursCount}회`} label="3시간 미만 방송" />
+        <MiniRecord
+          value={formatDuration(0, stats.shortestMinutes, stats.shortestSeconds)}
+          label="가장 짧은 방송"
+        />
+      </div>
+    </motion.div>
+  );
+}
+
 /**
- * "2026 방송 기록" 섹션. 핵심 기록 5개(카운트업 카드) -> 가장 중요한 숫자인
- * 총 방송시간을 강조하는 FEATURED RECORD -> 간단한 추가 기록(MORE RECORDS) ->
- * 최장 방송 하이라이트 순으로 구성했다. 기존 STATISTICS 페이지의 다크 네이비
- * 배경, gold(star) 포인트, font-display/font-serif-kr, border+bg-bg-soft/50
- * 카드 스타일을 그대로 재사용했다 - 새 색상/폰트는 추가하지 않았다.
+ * STATISTICS 페이지의 "연말결산" 스토리텔링 블록. BY THE NUMBERS(page.tsx의
+ * StatCard 4개) 다음, 기존 MONTHLY 차트 이후에 이어진다. 기존 다크 네이비
+ * 배경 + border+bg-bg-soft/50 카드 + font-display/font-serif-kr + star(gold)
+ * 포인트를 그대로 재사용했고 새 색상/폰트/이미지/영상은 추가하지 않았다.
+ *
+ * 흐름: MOST ACTIVE MONTH -> LONGEST CONTENT -> MOST FEATURED GAMES ->
+ * MARATHON STREAMS -> LONGEST STREAM -> (조용한 보조 기록 에필로그).
+ * 기본 통계에서 점점 더 재미있는 기록으로 이어지도록 순서를 그대로 따랐다.
  */
 export default function BroadcastRecordsSection() {
   return (
-    <section className="mx-auto max-w-4xl px-6 py-20">
-      <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 pb-12 text-center">
-        <span className="font-display text-xs tracking-[0.4em] text-star">2026 ON AIR</span>
-        <h2 className="font-display text-3xl tracking-wide text-text sm:text-5xl">
-          워니와 함께한 2026년
-        </h2>
-        <p className="font-serif-kr text-text-soft">숫자로 다시 보는 우리의 2026년</p>
-      </div>
+    <>
+      <MostActiveMonthSection />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {CARDS.map((card, i) => (
-          <BroadcastStatCard
-            key={card.index}
-            {...card}
-            delay={i * 0.08}
-            className={i === CARDS.length - 1 ? "col-span-2 sm:col-span-1" : ""}
-          />
-        ))}
-      </div>
+      <RankedRecordSection
+        title="LONGEST CONTENT"
+        subtitle="가장 오래 함께했던 콘텐츠"
+        items={stats.contents}
+        footnote="콘텐츠 진행 기간의 방송시간을 기준으로 집계"
+      />
 
-      {/* FEATURED RECORD - 이 섹션에서 가장 중요한 숫자(총 방송시간)를
-          카드 하나보다 훨씬 큰, 연말결산 느낌의 여백 있는 블록으로 강조한다. */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.9, ease: "easeOut" }}
-        className="mt-16 flex flex-col items-center gap-5 border-y border-white/10 py-16 text-center sm:py-24"
-      >
-        <span className="font-display text-xs tracking-[0.4em] text-star">FEATURED RECORD</span>
-        <FeaturedHoursNumber />
-        <p className="font-serif-kr max-w-sm text-base leading-relaxed text-text sm:text-lg">
-          2026년,
-          <br />
-          우리가 함께했던 시간.
-        </p>
-        <p className="text-sm text-text-soft sm:text-base">
-          {formatDuration(stats.totalHours, stats.totalMinutes, stats.totalSeconds)}
-        </p>
-      </motion.div>
+      <RankedRecordSection
+        title="MOST FEATURED GAMES"
+        subtitle="2026 다시보기에 가장 많이 등장한 게임"
+        items={stats.games}
+        footnote="VOD 제목에 등장한 게임을 기준으로 집계"
+      />
 
-      {/* MORE RECORDS - 복잡한 표 대신 작은 기록 카드 4개만 보여준다. */}
-      <div className="mt-16">
-        <div className="mx-auto flex max-w-sm flex-col items-center gap-2 pb-8 text-center">
-          <span className="font-display text-xs tracking-[0.3em] text-star">MORE RECORDS</span>
-          <p className="font-serif-kr text-sm text-text-soft">조금 더 자세히 보면</p>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <MiniRecord value={`${stats.over10HoursCount}회`} label="10시간 이상 방송" />
-          <MiniRecord value={`${stats.over12HoursCount}회`} label="12시간 이상 방송" />
-          <MiniRecord value={`${stats.under3HoursCount}회`} label="3시간 미만 방송" />
-          <MiniRecord
-            value={formatDuration(0, stats.shortestMinutes, stats.shortestSeconds)}
-            label="가장 짧은 방송"
-          />
-        </div>
-      </div>
-
-      {/* LONGEST STREAM 하이라이트 - 48:30:11 숫자가 가장 먼저 눈에 들어오게 한다. */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.9, ease: "easeOut" }}
-        className="mt-16 flex flex-col items-center gap-4 border border-star/20 bg-bg-soft/40 px-6 py-14 text-center sm:py-16"
-      >
-        <span className="font-display text-xs tracking-[0.4em] text-star">LONGEST STREAM</span>
-        <p className="font-display text-5xl tracking-wide text-text sm:text-7xl">
-          {String(stats.longestHours).padStart(2, "0")}:{String(stats.longestMinutes).padStart(2, "0")}:
-          {String(stats.longestSeconds).padStart(2, "0")}
-        </p>
-        <p className="text-xs tracking-[0.15em] text-text-soft">{stats.longestStreamDate}</p>
-        <blockquote className="font-serif-kr max-w-sm text-base italic leading-relaxed text-text sm:text-lg">
-          &ldquo;{stats.longestStreamQuote}&rdquo;
-        </blockquote>
-        <p className="text-sm text-text-soft sm:text-base">
-          무려 {formatDuration(stats.longestHours, stats.longestMinutes, stats.longestSeconds)}.
-        </p>
-      </motion.div>
-    </section>
+      <MarathonStreamsSection />
+      <LongestStreamHighlight />
+      <MoreRecordsEpilogue />
+    </>
   );
 }

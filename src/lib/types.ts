@@ -179,6 +179,14 @@ export interface HighlightStat {
   suffix?: string;
   /** 소수점 자리수 (기본 0) */
   decimals?: number;
+  /** "9H 52M"처럼 두 번째 숫자가 함께 카운트업돼야 할 때만 넘긴다. */
+  secondaryValue?: number;
+  /**
+   * 카운트업 중간값을 받아 실제 표시 문자열을 직접 만든다. 넘기면 value/
+   * suffix/decimals 대신 이 함수의 결과를 그대로 보여준다(예: "2,762H",
+   * "9H 52M"처럼 기존 단일 숫자+suffix 포맷으로 표현하기 어려운 경우용).
+   */
+  format?: (primary: number, secondary: number) => string;
   /** 카드 상단 영문 라벨, 예: "BROADCASTS" */
   label: string;
   /** 짧은 한글 설명 */
@@ -215,12 +223,28 @@ export interface MonthlyStat {
 
 /** STATISTICS 페이지 전체 데이터. src/data/statistics.ts에서 채운다. */
 export interface StatisticsData {
-  highlights: HighlightStat[];
   records: RecordStat[];
   topContents: TopContentItem[];
   topGames: TopContentItem[];
   quoteOfTheYear: QuoteOfTheYearData;
   monthly: MonthlyStat[];
+}
+
+/** LONGEST CONTENT / MOST FEATURED GAMES 공통 순위 항목. */
+export interface BroadcastRankedRecord {
+  rank: number;
+  name: string;
+  hours: number;
+  /** 기간("07.13 — 08.10") 또는 VOD 수("41 VODS") 등 순위별 보조 정보. */
+  detail: string;
+}
+
+export interface MarathonStreamRecord {
+  /** 예: "02.18" */
+  date: string;
+  title: string;
+  /** 예: "24H 08M" */
+  duration: string;
 }
 
 /**
@@ -233,19 +257,36 @@ export interface BroadcastStats2026 {
   broadcastDays: number;
   totalHours: number;
   totalMinutes: number;
-  totalSeconds: number;
   averageHours: number;
   averageMinutes: number;
-  averageSeconds: number;
-  longestHours: number;
-  longestMinutes: number;
-  longestSeconds: number;
-  /** 예: "2026.08.07" */
-  longestStreamDate: string;
-  longestStreamQuote: string;
-  shortestMinutes: number;
-  shortestSeconds: number;
+
+  mostActiveMonth: {
+    /** 예: "AUGUST" */
+    month: string;
+    hours: number;
+    /** 예: "가장 오래 함께했던 달" */
+    descriptionKo: string;
+  };
+
+  /** LONGEST CONTENT - 콘텐츠 진행 기간의 방송시간 기준 집계. */
+  contents: BroadcastRankedRecord[];
+  /** MOST FEATURED GAMES - VOD 제목에 등장한 게임 기준 집계. */
+  games: BroadcastRankedRecord[];
+  marathonStreams: MarathonStreamRecord[];
+
+  longestStream: {
+    /** "HH:MM:SS" */
+    duration: string;
+    /** 예: "2026.08.07" */
+    date: string;
+    /** 줄바꿈은 "\n"으로 표현한다. */
+    quote: string;
+  };
+
+  // 기존 "MORE RECORDS" 보조 기록 - 작은 에필로그 블록에 그대로 남겨둔다.
   over10HoursCount: number;
   over12HoursCount: number;
   under3HoursCount: number;
+  shortestMinutes: number;
+  shortestSeconds: number;
 }

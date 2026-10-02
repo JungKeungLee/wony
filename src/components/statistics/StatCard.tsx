@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { animate, motion, useInView } from "framer-motion";
+import { animate, motion, useInView, useReducedMotion } from "framer-motion";
 import type { HighlightStat } from "@/lib/types";
 
 interface StatCardProps extends HighlightStat {
@@ -12,6 +12,8 @@ export default function StatCard({
   value,
   suffix = "",
   decimals = 0,
+  secondaryValue = 0,
+  format,
   label,
   description,
   featured = false,
@@ -19,18 +21,34 @@ export default function StatCard({
 }: StatCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const prefersReducedMotion = useReducedMotion();
   const [display, setDisplay] = useState(0);
+  const [secondaryDisplay, setSecondaryDisplay] = useState(0);
 
   useEffect(() => {
-    if (!isInView) return;
-    const controls = animate(0, value, {
-      duration: 1.4,
-      delay,
-      ease: "easeOut",
-      onUpdate: (v) => setDisplay(v),
-    });
-    return () => controls.stop();
-  }, [isInView, value, delay]);
+    if (!isInView || prefersReducedMotion) return;
+    const controls = [
+      animate(0, value, {
+        duration: 1.4,
+        delay,
+        ease: "easeOut",
+        onUpdate: setDisplay,
+      }),
+      animate(0, secondaryValue, {
+        duration: 1.4,
+        delay,
+        ease: "easeOut",
+        onUpdate: setSecondaryDisplay,
+      }),
+    ];
+    return () => controls.forEach((c) => c.stop());
+  }, [isInView, value, secondaryValue, delay, prefersReducedMotion]);
+
+  // prefers-reduced-motion이면 애니메이션 없이 바로 최종 숫자를 보여준다 - 이
+  // 값은 effect에서 setState로 만들지 않고 렌더링 중 그냥 계산한다.
+  const shown = prefersReducedMotion ? (isInView ? value : 0) : display;
+  const shownSecondary = prefersReducedMotion ? (isInView ? secondaryValue : 0) : secondaryDisplay;
+  const formatted = format ? format(shown, shownSecondary) : `${shown.toFixed(decimals)}${suffix}`;
 
   return (
     <motion.div
@@ -47,18 +65,11 @@ export default function StatCard({
           같은 높이에 오도록 한다. */}
       <div className="flex min-h-[3rem] w-full items-center justify-center sm:min-h-[4.5rem]">
         {featured ? (
-          <p className="font-display text-5xl text-text sm:text-7xl">
-            {display.toFixed(decimals)}
-            {suffix}
-          </p>
+          <p className="font-display text-5xl text-text sm:text-7xl">{formatted}</p>
         ) : (
           // 일반(non-featured) 카드는 기존보다 한 단계 큰 크기를 써서 featured
-          // 카드 옆에 있어도 존재감이 약해 보이지 않게 한다. 단위(h)는 숫자보다
-          // 살짝 작게 둬서 숫자 쪽이 여전히 시각적으로 가장 두드러지게 한다.
-          <p className="font-display text-4xl text-text sm:text-5xl">
-            {display.toFixed(decimals)}
-            {suffix && <span className="text-2xl sm:text-3xl">{suffix}</span>}
-          </p>
+          // 카드 옆에 있어도 존재감이 약해 보이지 않게 한다.
+          <p className="font-display text-4xl text-text sm:text-5xl">{formatted}</p>
         )}
       </div>
       {/* label도 featured 여부에 따라 글자 크기가 미세하게 달라(11px vs xs/sm)
