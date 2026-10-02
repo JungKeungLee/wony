@@ -193,6 +193,13 @@ export interface HighlightStat {
   description: string;
   /** true면 더 크게 강조해서 보여준다 */
   featured?: boolean;
+  /**
+   * true면 숫자가 길어질 때 공백에서 자연스럽게 줄바꿈되는 것을 허용한다
+   * (기본값 false = 항상 한 줄 유지). "9H 52M"처럼 두 줄로 꺾여도 괜찮은
+   * 평균 카드에만 true로 준다 - "2,762H"/"3,000H"처럼 한 줄을 유지해야
+   * 하는 숫자는 기본값(false)을 그대로 쓴다.
+   */
+  allowWrap?: boolean;
 }
 
 /** 숫자가 아닌 기록/에피소드성 항목 (가장 오래 방송한 날 등) */

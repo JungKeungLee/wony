@@ -36,6 +36,9 @@ const BY_THE_NUMBERS: HighlightStat[] = [
     label: "AVERAGE",
     description: "방송을 켜면 평균 이만큼",
     format: (h, m) => `${Math.round(h)}H ${Math.round(m)}M`,
+    // "9H 52M"은 공백에서 자연스럽게 두 줄(9H / 52M)로 꺾여도 괜찮다 -
+    // 평균이 10시간을 넘어가도(예: "10H 15M") 한 줄을 억지로 유지하지 않는다.
+    allowWrap: true,
   },
 ];
 
