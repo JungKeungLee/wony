@@ -203,10 +203,23 @@ export interface HighlightStat {
 }
 
 /** 숫자가 아닌 기록/에피소드성 항목 (가장 오래 방송한 날 등) */
+/** 숫자가 아닌 기록/에피소드성 항목(가장 긴 방송 등). value가 이 카드의
+ * 핵심 숫자로, 다른 필드보다 가장 크게 강조해서 보여준다. */
 export interface RecordStat {
+  /** 카드 상단 작은 라벨, 예: "가장 긴 방송" */
   title: string;
+  /** "8월"/"5월"처럼 value보다 작게 보여줄 보조 텍스트(월간 기록에서만 사용). */
+  badge?: string;
+  /** 이 카드의 핵심 숫자 - 가장 크게 보여준다. 예: "48H 30M" */
   value: string;
+  /** value 아래 작게 보여줄 날짜 등 보조 정보, 예: "2026.08.07" */
+  detail?: string;
+  /** 방송 제목/멘트 등 인용구. 줄바꿈은 "\n"으로 표현한다. */
+  quote?: string;
   description?: string;
+  /** 디자인을 위해 반올림/단순화해 표시한 값의 정확한 원본 - 화면에는
+   * 보여주지 않고 데이터 출처 확인용으로만 남겨둔다. */
+  rawValue?: string;
 }
 
 export interface TopContentItem {
