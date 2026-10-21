@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Cloudflare(cloudflare 브랜치) 전용: Next 16.3은 프리페치 묶음 전송(prefetchInlining)이
+    // 기본으로 켜져 있는데, OpenNext 1.20.6의 캐시 응답은 이때 세그먼트 프리페치
+    // (Next-Router-Segment-Prefetch) 요청에 페이지 전체 RSC를 돌려준다. 브라우저가 이를
+    // 받아들이지 못하고 같은 프리페치를 무한히 다시 보내(탭 하나당 분당 70~90건) Workers
+    // 무료 한도를 소모하므로 끈다 - 세그먼트별 프리페치는 링크당 한 번씩만 일어난다.
+    prefetchInlining: false,
+  },
   images: {
     // Cloudflare(cloudflare 브랜치) 전용: Workers에는 Vercel 같은 기본 이미지 최적화가
     // 없어서 원본 이미지를 그대로 내려준다(C안). main(Vercel)에는 이 줄이 없다.
