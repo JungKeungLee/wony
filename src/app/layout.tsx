@@ -11,8 +11,6 @@ import StarProgressBadge from "@/components/effects/StarProgressBadge";
 import StarUnlockCelebration from "@/components/effects/StarUnlockCelebration";
 import YearEndCountdown from "@/components/effects/YearEndCountdown";
 import Footer from "@/components/layout/Footer";
-// 운영 테스트 기간 전용 - 11월 실제 배포 전 이 import와 아래 사용처를 함께 제거한다.
-import OperationTestSwitcher from "@/components/dev-test/OperationTestSwitcher";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -72,7 +70,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <StarProgressBadge />
                 <StarUnlockCelebration />
                 <YearEndCountdown />
-                <OperationTestSwitcher />
               </StarCollectionProvider>
             </MusicProvider>
           </CinematicTransitionProvider>
