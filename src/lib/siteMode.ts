@@ -16,6 +16,28 @@
 export type SiteMode = "contribute" | "public";
 
 /**
+ * 모든 페이지는 src/app/[mode]/ 아래에 있고, 빌드 때 두 모드 버전이 각각 정적으로
+ * 만들어진다. 방문자는 계속 /letters 같은 원래 URL로 접속하고, proxy.ts가 서명 쿠키를
+ * 검증한 뒤 내부적으로만 /contribute/letters 또는 /public/letters로 rewrite한다.
+ */
+export const SITE_MODES: readonly SiteMode[] = ["contribute", "public"];
+
+export function isSiteMode(value: unknown): value is SiteMode {
+  return value === "contribute" || value === "public";
+}
+
+/**
+ * 내부 mode 접두사(/contribute, /public)를 뗀 "방문자 기준" 경로. 정적 생성 시점에는
+ * usePathname()이 /contribute/letters를, 브라우저에서는 /letters를 돌려줄 수 있어서
+ * 비교는 항상 이 함수를 거친 값으로 한다.
+ */
+export function stripModePrefix(pathname: string): string {
+  const match = /^\/(contribute|public)(\/.*)?$/.exec(pathname);
+  if (!match) return pathname;
+  return match[2] ?? "/";
+}
+
+/**
  * 배포 환경변수로 정해지는 "기본" 모드(요청/방문자와 무관하게 고정).
  * 값이 정확히 "public"이 아니면 항상 안전한 쪽인 "contribute"로 취급한다
  * (환경변수를 깜빡 설정하지 않았을 때 전체 사이트가 실수로 공개되는 사고를 막기 위함).

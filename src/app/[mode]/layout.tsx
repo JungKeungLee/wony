@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import { Noto_Sans_KR, Nanum_Myeongjo, Playfair_Display } from "next/font/google";
 import { MusicProvider } from "@/context/MusicContext";
 import { StarCollectionProvider } from "@/context/StarCollectionContext";
 import { SiteModeProvider } from "@/context/SiteModeContext";
 import { CinematicTransitionProvider } from "@/context/CinematicTransitionContext";
-import { getBaseSiteMode, PREVIEW_COOKIE_NAME } from "@/lib/siteMode";
-import { verifyPreviewCookieValue } from "@/lib/previewAuth";
+import { getBaseSiteMode, isSiteMode, SITE_MODES, type SiteMode } from "@/lib/siteMode";
 import StarField from "@/components/effects/StarField";
 import StarProgressBadge from "@/components/effects/StarProgressBadge";
 import StarUnlockCelebration from "@/components/effects/StarUnlockCelebration";
 import YearEndCountdown from "@/components/effects/YearEndCountdown";
 import Footer from "@/components/layout/Footer";
-import "./globals.css";
+import "../globals.css";
 
 const notoSansKr = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
@@ -33,12 +32,27 @@ const playfairDisplay = Playfair_Display({
 });
 
 /**
- * metadata는 빌드/서버 시점에 고정되는 값이라 방문자별 Full Preview 여부는 반영할
- * 수 없다 - 대신 배포 환경변수 기준의 "기본" 모드로 결정한다(검색엔진/링크
- * 미리보기가 실제로 보는 것도 이 기본 모드 기준이라 정확하다).
+ * 모든 페이지를 contribute / public 두 버전으로 빌드 때 정적 생성한다(요청마다 서버
+ * 렌더링하지 않음 - Cloudflare Workers 무료 플랜 CPU 한도 대응).
+ *
+ * 어떤 버전을 보여줄지는 proxy.ts가 서버에서 결정한다: 기본 모드(NEXT_PUBLIC_SITE_MODE)와
+ * HMAC 서명 쿠키 검증 결과에 따라 /letters -> /contribute/letters 또는 /public/letters로
+ * 내부 rewrite한다. 그래서 이 레이아웃은 쿠키를 읽지 않고 URL의 mode 값만 믿는다 -
+ * /public/* 버전은 proxy가 서명을 확인한 요청(또는 기본 모드가 public인 경우)에만 열린다.
  */
-export const metadata: Metadata =
-  getBaseSiteMode() === "contribute"
+export function generateStaticParams(): { mode: SiteMode }[] {
+  return SITE_MODES.map((mode) => ({ mode }));
+}
+
+async function resolveMode(params: Promise<{ mode: string }>): Promise<SiteMode> {
+  const { mode } = await params;
+  if (!isSiteMode(mode)) notFound();
+  return mode;
+}
+
+/** 검색엔진/링크 미리보기는 proxy가 기본 모드 버전으로 보내므로 기본 모드 기준 문구가 노출된다. */
+export async function generateMetadata({ params }: LayoutProps<"/[mode]">): Promise<Metadata> {
+  return (await resolveMode(params)) === "contribute"
     ? {
         title: "WONY 2026",
         description: "2026년의 마지막 페이지를 함께 채워주세요.",
@@ -47,14 +61,12 @@ export const metadata: Metadata =
         title: "WONY | Our Memories of 2026",
         description: "2026년, 워니와 팬들이 함께한 순간을 돌아보는 연말 팬 프로젝트",
       };
+}
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const baseMode = getBaseSiteMode();
-  const cookieStore = await cookies();
-  // proxy.ts와 같은 기준(lib/previewAuth.ts의 HMAC 서명 검증)으로만 판단한다.
-  const isPreview = await verifyPreviewCookieValue(cookieStore.get(PREVIEW_COOKIE_NAME)?.value);
-  // Full Preview 쿠키가 있으면 이 요청 동안은 public 모드와 동일하게 취급한다.
-  const effectiveMode = isPreview ? "public" : baseMode;
+export default async function RootLayout({ children, params }: LayoutProps<"/[mode]">) {
+  const effectiveMode = await resolveMode(params);
+  // 기본 모드가 contribute인데 public 버전이 열렸다면 proxy가 서명 쿠키를 확인한 Full Preview다.
+  const isPreview = effectiveMode === "public" && getBaseSiteMode() === "contribute";
 
   return (
     <html

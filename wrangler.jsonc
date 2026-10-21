@@ -8,7 +8,12 @@
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	"assets": {
 		"directory": ".open-next/assets",
-		"binding": "ASSETS"
+		"binding": "ASSETS",
+		// 정적 생성된 페이지 캐시(open-next.config.ts의 staticAssetsIncrementalCache)는
+		// assets/cdn-cgi/_next_cache/에 들어간다. 비공개 페이지 HTML도 포함되므로, 이 경로로
+		// 들어온 외부 요청은 정적 파일로 바로 내보내지 않고 Worker가 먼저 받게 한다
+		// (Worker 내부의 env.ASSETS.fetch는 이 규칙과 무관하게 계속 읽을 수 있다).
+		"run_worker_first": ["/cdn-cgi/*"]
 	},
 	"services": [
 		{

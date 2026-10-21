@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSitePathname } from "@/lib/useSitePathname";
 import { motion } from "framer-motion";
 import { fadeUp } from "@/lib/motion";
 import { CONTACT_EMAIL, FOOTER_LEGAL_LINKS, FOOTER_SOCIAL_LINKS } from "@/lib/constants";
@@ -75,7 +75,7 @@ function ContributeFooter() {
 }
 
 export default function Footer() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { isUnlocked } = useStarCollection();
   const { isContributeMode } = useSiteMode();
   const showFinalPageLink = isUnlocked && pathname !== "/surprise";

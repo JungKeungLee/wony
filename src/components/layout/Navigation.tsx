@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSitePathname } from "@/lib/useSitePathname";
 import { AnimatePresence, motion } from "framer-motion";
 import { NAV_ITEMS } from "@/lib/constants";
 import { useSiteMode } from "@/context/SiteModeContext";
@@ -20,7 +20,7 @@ const CONTRIBUTE_VISIBLE_LABELS = new Set(["LETTER", "FAN ART", "VIDEO" /* , "CO
 
 export default function Navigation({ revealDelay = 0 }: NavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { isContributeMode } = useSiteMode();
 
   const navItems = isContributeMode

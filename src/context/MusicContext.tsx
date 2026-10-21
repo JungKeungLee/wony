@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { usePathname } from "next/navigation";
+import { useSitePathname } from "@/lib/useSitePathname";
 import { DEFAULT_BGM_SRC, DEFAULT_BGM_VOLUME, SURPRISE_BGM_SRC } from "@/lib/constants";
 import { useSiteMode } from "./SiteModeContext";
 
@@ -122,7 +122,7 @@ function playWhenReady(audio: HTMLAudioElement, onSettled: (success: boolean, er
 }
 
 export function MusicProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { isContributeMode } = useSiteMode();
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState<number>(readStoredVolume);

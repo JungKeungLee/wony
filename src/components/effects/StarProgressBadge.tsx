@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useSitePathname } from "@/lib/useSitePathname";
 import { ALL_STAR_IDS, useStarCollection } from "@/context/StarCollectionContext";
 import { useSiteMode } from "@/context/SiteModeContext";
 import StatusToast from "@/components/ui/StatusToast";
@@ -17,7 +17,7 @@ const HINT_MESSAGES = {
  * 해치지 않도록 숨긴다.
  */
 export default function StarProgressBadge() {
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const { isContributeMode } = useSiteMode();
   const { collectedStars, firstStarJustFound, dismissFirstStarHint } = useStarCollection();
   // 첫 힌트는 "발견했어요" -> (잠시 후) "다른 곳에도..." 두 단계로 순서대로 보여준다.

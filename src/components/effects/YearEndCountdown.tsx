@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSitePathname } from "@/lib/useSitePathname";
 import { AnimatePresence, motion } from "framer-motion";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useSiteMode } from "@/context/SiteModeContext";
@@ -113,7 +114,7 @@ function clearLegacySeenFlags() {
  */
 export default function YearEndCountdown() {
   const hasMounted = useHasMounted();
-  const pathname = usePathname();
+  const pathname = useSitePathname();
   const router = useRouter();
   const { isContributeMode } = useSiteMode();
   const [now, setNow] = useState<number | null>(null);
