@@ -1,6 +1,25 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { NextConfig } from "next";
 
+/**
+ * public/images/timeline/ 아래 실제로 배포되는 파일 목록(예: "/images/timeline/01/01.webp").
+ * data/timeline.ts의 placeholder 경로 중 이 목록에 없는 것은 화면에서 요청하지 않고
+ * 곧바로 자리표시를 보여준다(src/lib/timelineImages.ts의 isMissingLocalTimelineImage).
+ */
+function listShippedTimelineImages(): string[] {
+  const root = path.join(process.cwd(), "public", "images", "timeline");
+  if (!fs.existsSync(root)) return [];
+  return fs
+    .readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => "/" + path.relative(path.join(process.cwd(), "public"), path.join(entry.parentPath, entry.name)).split(path.sep).join("/"));
+}
+
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_LOCAL_TIMELINE_IMAGES: JSON.stringify(listShippedTimelineImages()),
+  },
   experimental: {
     // Cloudflare(cloudflare 브랜치) 전용: Next 16.3은 프리페치 묶음 전송(prefetchInlining)이
     // 기본으로 켜져 있는데, OpenNext 1.20.6의 캐시 응답은 이때 세그먼트 프리페치

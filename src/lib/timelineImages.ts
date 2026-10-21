@@ -48,6 +48,20 @@ export async function fetchTimelineSmallImages(): Promise<Map<number, TimelineIm
   return map;
 }
 
+/**
+ * data/timeline.ts의 정적 placeholder 경로(/images/timeline/...) 중 실제로 배포에 포함된
+ * 파일 목록 - next.config.ts가 빌드 시점에 public/images/timeline/을 읽어 넣어준다.
+ * 목록에 없는 경로는 요청해봐야 404이므로(Cloudflare에서는 Worker 호출까지 발생),
+ * TimelineImage/ImageModal이 요청 없이 곧바로 기존 "IMAGE SOON" 자리표시를 보여주게 한다.
+ */
+const SHIPPED_LOCAL_TIMELINE_IMAGES: ReadonlySet<string> = new Set(
+  JSON.parse(process.env.NEXT_PUBLIC_LOCAL_TIMELINE_IMAGES ?? "[]") as string[]
+);
+
+export function isMissingLocalTimelineImage(src: string): boolean {
+  return src.startsWith("/images/timeline/") && !SHIPPED_LOCAL_TIMELINE_IMAGES.has(src);
+}
+
 /** image_path로부터 Storage 공개 URL을 계산한다. */
 export function getTimelineImageUrl(imagePath: string): string {
   return supabase.storage.from(TIMELINE_IMAGE_BUCKET).getPublicUrl(imagePath).data.publicUrl;

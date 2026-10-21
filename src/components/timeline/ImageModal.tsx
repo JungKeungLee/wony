@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSiteMode } from "@/context/SiteModeContext";
+import { isMissingLocalTimelineImage } from "@/lib/timelineImages";
 
 export interface ImageModalState {
   images: string[];
@@ -21,7 +22,8 @@ interface ImageModalProps {
 }
 
 function ModalImage({ src, alt }: { src: string; alt: string }) {
-  const [hasError, setHasError] = useState(false);
+  // 배포에 없는 정적 placeholder 경로면 404 요청 없이 처음부터 자리표시를 보여준다.
+  const [hasError, setHasError] = useState(() => isMissingLocalTimelineImage(src));
 
   if (hasError) {
     return (

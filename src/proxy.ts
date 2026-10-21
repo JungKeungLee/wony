@@ -40,6 +40,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Cloudflare 배포에서는 실제로 존재하는 정적 파일(이미지/영상/음악/JS/CSS/폰트 등)을
+  // Workers Static Assets가 Worker보다 먼저 응답하므로 여기까지 오지 않는다. 확장자가 있는
+  // 경로나 /_next/* 가 여기 왔다는 건 없는 파일(봇 스캔, 이전 배포의 청크 등)이라는 뜻이라
+  // 페이지 렌더링(약 70ms CPU) 없이 바로 404를 준다.
+  // next dev는 proxy가 public/ 파일보다 먼저 실행되므로 개발 모드에서는 그대로 통과시킨다.
+  if (hasFileExtension(pathname) || pathname.startsWith("/_next/")) {
+    if (process.env.NODE_ENV !== "production") return NextResponse.next();
+    return new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=300" } });
+  }
+
   const suppliedKey = request.nextUrl.searchParams.get(PREVIEW_QUERY_KEY);
   const signedCookieValue = isValidPreviewKey(suppliedKey) ? await createPreviewCookieValue() : null;
 
@@ -85,6 +95,10 @@ export async function proxy(request: NextRequest) {
  * 같은 URL이 쿠키에 따라 다른 버전을 돌려주므로, 공유 캐시가 public 버전을 다른
  * 방문자에게 재사용하지 않도록 private + Vary: Cookie를 붙인다.
  */
+function hasFileExtension(pathname: string): boolean {
+  return pathname.slice(pathname.lastIndexOf("/") + 1).includes(".");
+}
+
 function rewriteToMode(request: NextRequest, mode: SiteMode) {
   const url = request.nextUrl.clone();
   url.pathname = `/${mode}${request.nextUrl.pathname === "/" ? "" : request.nextUrl.pathname}`;
@@ -96,6 +110,7 @@ function rewriteToMode(request: NextRequest, mode: SiteMode) {
 }
 
 export const config = {
-  // _next 정적 자산과 확장자가 있는 파일(이미지/오디오/영상/favicon 등)은 검사 대상에서 뺀다.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  // 모든 요청을 검사한다. 실제 정적 파일은 Static Assets가 먼저 응답해 Worker까지 오지 않고,
+  // Worker까지 온 확장자 경로(없는 파일)는 위에서 렌더링 없이 404로 끝낸다.
+  matcher: ["/:path*"],
 };

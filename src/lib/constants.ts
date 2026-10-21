@@ -26,8 +26,9 @@ export const INTRO_LINES: string[] = [
 /**
  * Hero 배경 이미지 경로. 값을 채우면 Hero가 next/image로 렌더링하고,
  * null이면 임시 그라디언트 배경을 사용한다.
+ * (cloudflare 브랜치: 원본 main.png와 같은 해상도로 빌드 시 생성한 WebP - scripts/optimize-static-images.mjs)
  */
-export const HERO_BACKGROUND_IMAGE: string | null = "/images/hero/main.png";
+export const HERO_BACKGROUND_IMAGE: string | null = "/images/hero/main.webp";
 
 /**
  * 배경 이미지에서 주요 피사체가 위치한 지점. PC/모바일에서 인물·풍경이

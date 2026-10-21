@@ -131,7 +131,7 @@ export default function PhoneIntro({ onComplete }: PhoneIntroProps) {
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- 완성된 스마트폰 HOME 화면 그래픽을 그대로 보여주는 정적 이미지 */}
             <img
-              src="/images/phone-home.png"
+              src="/images/phone-home.webp"
               alt="스마트폰 HOME 화면 - WONY 앱을 눌러 들어가세요"
               className="absolute inset-0 h-full w-full select-none object-cover"
               draggable={false}

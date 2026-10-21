@@ -8,11 +8,13 @@ import type { FanArt } from "@/lib/types";
 interface FanArtCardProps {
   art: FanArt;
   delay?: number;
+  /** eager: 즉시+높은 우선순위, high: lazy 유지+높은 우선순위, lazy: 기존 그대로 (FanArtGallery 참고) */
+  loadPriority?: "eager" | "high" | "lazy";
   onOpen: () => void;
 }
 
 /** 팬아트는 오직 이미지만 보여준다 - 작성자/제목/메시지는 표시하지 않는다. */
-export default function FanArtCard({ art, delay = 0, onOpen }: FanArtCardProps) {
+export default function FanArtCard({ art, delay = 0, loadPriority = "lazy", onOpen }: FanArtCardProps) {
   const [hasError, setHasError] = useState(false);
 
   return (
@@ -37,7 +39,8 @@ export default function FanArtCard({ art, delay = 0, onOpen }: FanArtCardProps) 
         <img
           src={getFanArtImageUrl(art.image_path)}
           alt="팬아트"
-          loading="lazy"
+          loading={loadPriority === "eager" ? "eager" : "lazy"}
+          fetchPriority={loadPriority === "lazy" ? "auto" : "high"}
           onError={() => setHasError(true)}
           className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
         />

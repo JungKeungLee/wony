@@ -9,6 +9,16 @@ import FanArtCard from "./FanArtCard";
 import FanArtModal from "./FanArtModal";
 import StatusToast from "@/components/ui/StatusToast";
 
+/**
+ * 첫 화면 팬아트 로딩 우선순위. 그리드는 모바일 2열 / sm 3열 / lg 4열이라
+ * - 앞 2개: 어느 화면 폭에서도 첫 줄이므로 즉시(eager) + 높은 우선순위로 받는다.
+ * - 3~4번째: 화면 폭에 따라 첫 화면일 수도 아닐 수도 있어 lazy는 유지하고 우선순위만 높인다
+ *   (화면에 보이지 않으면 내려받지 않는다).
+ * - 나머지: 기존과 같은 lazy.
+ */
+const EAGER_FAN_ART_COUNT = 2;
+const HIGH_PRIORITY_FAN_ART_COUNT = 4;
+
 type Status = "loading" | "success" | "error";
 
 export default function FanArtGallery() {
@@ -90,6 +100,7 @@ export default function FanArtGallery() {
             key={art.id}
             art={art}
             delay={(i % 6) * 0.06}
+            loadPriority={i < EAGER_FAN_ART_COUNT ? "eager" : i < HIGH_PRIORITY_FAN_ART_COUNT ? "high" : "lazy"}
             onOpen={() => setActiveIndex(i)}
           />
         ))}

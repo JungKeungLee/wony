@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { isMissingLocalTimelineImage } from "@/lib/timelineImages";
 
 interface TimelineImageProps {
   src: string;
@@ -27,7 +28,8 @@ export default function TimelineImage({
   className = "",
   onClick,
 }: TimelineImageProps) {
-  const [hasError, setHasError] = useState(false);
+  // 배포에 없는 정적 placeholder 경로면 404 요청 없이 처음부터 자리표시를 보여준다.
+  const [hasError, setHasError] = useState(() => isMissingLocalTimelineImage(src));
 
   return (
     <div

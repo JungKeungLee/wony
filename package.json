@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "cf:build": "opennextjs-cloudflare build && node scripts/cf-strip-server-env.mjs",
+    "cf:build": "npm run cf:images && opennextjs-cloudflare build && node scripts/cf-strip-server-env.mjs",
     "cf:preview": "npm run cf:build && opennextjs-cloudflare preview",
-    "cf:deploy": "npm run cf:build && opennextjs-cloudflare deploy"
+    "cf:deploy": "npm run cf:build && opennextjs-cloudflare deploy",
+    "predev": "node scripts/optimize-static-images.mjs",
+    "cf:images": "node scripts/optimize-static-images.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

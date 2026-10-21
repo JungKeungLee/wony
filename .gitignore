@@ -46,3 +46,7 @@ next-env.d.ts
 /.wrangler/
 .dev.vars*
 !.dev.vars.example
+
+# 빌드 시 생성되는 WebP (scripts/optimize-static-images.mjs, cloudflare 브랜치 전용)
+/public/images/hero/main.webp
+/public/images/phone-home.webp
