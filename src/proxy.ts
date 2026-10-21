@@ -30,14 +30,17 @@ import {
  * - 서명 쿠키가 유효하면 public 정적 버전, 아니면 CONTRIBUTE_ALLOWED_PATHS에 있는 경로만
  *   contribute 정적 버전으로 연결하고, 그 외 경로는 전부 "/"로 돌려보낸다.
  *
- * API 라우트(/api/*)는 페이지가 아니므로 모드와 무관하게 항상 통과시킨다 - VIDEO
+ * 실제 API 라우트(API_ROUTES)는 페이지가 아니므로 모드와 무관하게 항상 통과시킨다 - VIDEO
  * 등록의 SOOP 썸네일 자동 추출 같은 기능은 contribute 모드에서도 정상 동작해야 한다.
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
+    // 실제로 있는 API만 Next로 넘긴다. 없는 /api/* 경로(삭제된 /api/dev-preview, 봇 스캔 등)는
+    // Next의 404 렌더링(100ms 이상 CPU)까지 가지 않도록 여기서 바로 404를 준다.
+    if (API_ROUTES.has(pathname)) return NextResponse.next();
+    return new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=300" } });
   }
 
   // Cloudflare 배포에서는 실제로 존재하는 정적 파일(이미지/영상/음악/JS/CSS/폰트 등)을
@@ -95,6 +98,9 @@ export async function proxy(request: NextRequest) {
  * 같은 URL이 쿠키에 따라 다른 버전을 돌려주므로, 공유 캐시가 public 버전을 다른
  * 방문자에게 재사용하지 않도록 private + Vary: Cookie를 붙인다.
  */
+/** src/app/api/ 아래 실제 라우트 목록 - 새 API를 추가하면 여기에도 넣어야 한다. */
+const API_ROUTES: ReadonlySet<string> = new Set(["/api/soop-thumbnail"]);
+
 function hasFileExtension(pathname: string): boolean {
   return pathname.slice(pathname.lastIndexOf("/") + 1).includes(".");
 }
