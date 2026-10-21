@@ -1,0 +1,4 @@
+# Cloudflare(cloudflare 브랜치) 로컬 프리뷰 전용 - `.dev.vars`로 복사해서 사용한다(.dev.vars는 커밋하지 않는다).
+# .dev.vars가 있으면 wrangler는 .env.local 대신 이 파일만 로컬 Secret으로 읽는다.
+# 실제 배포 환경의 값은 `wrangler secret put FULL_PREVIEW_KEY` 또는 Cloudflare 대시보드 Secret으로 넣는다.
+FULL_PREVIEW_KEY=

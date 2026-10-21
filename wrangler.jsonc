@@ -1,0 +1,26 @@
+// Cloudflare(cloudflare 브랜치) 전용 - Vercel(main)에서는 사용하지 않는다.
+// 운영 도메인은 연결하지 않는다(routes 없음) - workers.dev 테스트 주소로만 검증한다.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "woni-fansite",
+	"compatibility_date": "2026-10-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference service binding, the service name must match the worker name
+			// see https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "woni-fansite"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+	// 이미지 최적화(IMAGES 바인딩)는 사용하지 않는다 - next.config.ts의 images.unoptimized 참고.
+	// FULL_PREVIEW_KEY는 여기에 적지 않는다 - `wrangler secret put` 또는 대시보드 Secret으로만 넣는다.
+}
