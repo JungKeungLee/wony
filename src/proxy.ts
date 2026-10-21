@@ -5,8 +5,12 @@ import {
   PREVIEW_COOKIE_NAME,
   PREVIEW_QUERY_KEY,
 } from "@/lib/siteMode";
-
-const PREVIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30일
+import {
+  createPreviewCookieValue,
+  isValidPreviewKey,
+  PREVIEW_COOKIE_MAX_AGE_SECONDS,
+  verifyPreviewCookieValue,
+} from "@/lib/previewAuth";
 
 /**
  * WONY 팬사이트 · contribute(참여용 사전 공개) 모드에서 정식 공개용 URL을 직접
@@ -19,28 +23,30 @@ const PREVIEW_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30일
  *
  * - public 모드(NEXT_PUBLIC_SITE_MODE=public)면 아무 것도 하지 않는다.
  * - contribute 모드라도 FULL_PREVIEW_KEY와 일치하는 ?previewFull=값이 오면,
- *   이후 요청부터는 public처럼 보이도록 쿠키를 심어준다(개발자용 전체 미리보기).
+ *   이후 요청부터는 public처럼 보이도록 서명된 쿠키를 심어준다(개발자용 전체 미리보기).
+ *   쿠키는 lib/previewAuth.ts의 HMAC 서명으로만 발급/검증한다 - 값을 임의로 넣어서는
+ *   통과할 수 없다.
  * - 그 외에는 CONTRIBUTE_ALLOWED_PATHS에 없는 경로를 전부 "/"로 돌려보낸다.
  *
  * API 라우트(/api/*)는 페이지가 아니므로 모드와 무관하게 항상 통과시킨다 - VIDEO
  * 등록의 SOOP 썸네일 자동 추출 같은 기능은 contribute 모드에서도 정상 동작해야 한다.
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
 
-  const previewKey = process.env.FULL_PREVIEW_KEY;
   const suppliedKey = request.nextUrl.searchParams.get(PREVIEW_QUERY_KEY);
+  const signedCookieValue = isValidPreviewKey(suppliedKey) ? await createPreviewCookieValue() : null;
 
-  if (previewKey && suppliedKey && suppliedKey === previewKey) {
+  if (signedCookieValue) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.searchParams.delete(PREVIEW_QUERY_KEY);
 
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set(PREVIEW_COOKIE_NAME, "1", {
+    response.cookies.set(PREVIEW_COOKIE_NAME, signedCookieValue, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -54,7 +60,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasPreviewCookie = request.cookies.get(PREVIEW_COOKIE_NAME)?.value === "1";
+  const hasPreviewCookie = await verifyPreviewCookieValue(request.cookies.get(PREVIEW_COOKIE_NAME)?.value);
   if (hasPreviewCookie) {
     return NextResponse.next();
   }

@@ -6,6 +6,7 @@ import { StarCollectionProvider } from "@/context/StarCollectionContext";
 import { SiteModeProvider } from "@/context/SiteModeContext";
 import { CinematicTransitionProvider } from "@/context/CinematicTransitionContext";
 import { getBaseSiteMode, PREVIEW_COOKIE_NAME } from "@/lib/siteMode";
+import { verifyPreviewCookieValue } from "@/lib/previewAuth";
 import StarField from "@/components/effects/StarField";
 import StarProgressBadge from "@/components/effects/StarProgressBadge";
 import StarUnlockCelebration from "@/components/effects/StarUnlockCelebration";
@@ -50,7 +51,8 @@ export const metadata: Metadata =
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const baseMode = getBaseSiteMode();
   const cookieStore = await cookies();
-  const isPreview = cookieStore.get(PREVIEW_COOKIE_NAME)?.value === "1";
+  // proxy.ts와 같은 기준(lib/previewAuth.ts의 HMAC 서명 검증)으로만 판단한다.
+  const isPreview = await verifyPreviewCookieValue(cookieStore.get(PREVIEW_COOKIE_NAME)?.value);
   // Full Preview 쿠키가 있으면 이 요청 동안은 public 모드와 동일하게 취급한다.
   const effectiveMode = isPreview ? "public" : baseMode;
 
