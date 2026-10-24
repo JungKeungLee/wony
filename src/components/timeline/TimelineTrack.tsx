@@ -7,7 +7,10 @@ import {
   deleteTimelineSmallImage,
   fetchTimelineImages,
   fetchTimelineSmallImages,
+  getSmallImageSlots,
+  getVisibleSmallImages,
   replaceTimelineImage,
+  TimelineSlotOccupiedError,
   uploadTimelineImage,
   uploadTimelineSmallImage,
 } from "@/lib/timelineImages";
@@ -47,6 +50,21 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingUploadRef = useRef<PendingUpload | null>(null);
+  // state 반영 전에 버튼이 연달아 눌려도 두 번째 업로드가 시작되지 않도록 즉시 잠그는 ref.
+  const isUploadInFlightRef = useRef(false);
+
+  // 업로드/삭제가 진행 중이면 다른 칸에 새 요청을 받지 않는다(중복 요청 방지).
+  const isTimelineBusy =
+    uploadingSmallSlot !== null || uploadingMonth !== null || isDeletingSmallImage || isDeletingCover;
+
+  /** 작은 이미지 목록을 DB 기준으로 다시 불러온다(중복 칸 오류 등으로 화면과 DB가 어긋났을 때). */
+  function reloadSmallImages() {
+    fetchTimelineSmallImages()
+      .then(setSmallImages)
+      .catch(() => {
+        // 다시 불러오기 실패는 조용히 무시한다 - 화면은 직전 상태로 남는다.
+      });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -74,11 +92,19 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
   }, []);
 
   function requestCoverPhoto(month: number) {
+    if (isTimelineBusy || isUploadInFlightRef.current) return;
     pendingUploadRef.current = { kind: "cover", month };
     fileInputRef.current?.click();
   }
 
   function requestSmallPhoto(month: number, sortOrder: number) {
+    if (isTimelineBusy || isUploadInFlightRef.current) return;
+    // 화면 기준으로도 그 칸(sort_order)이 실제로 비어 있을 때만 등록을 시작한다.
+    if (getSmallImageSlots(smallImages.get(month) ?? [])[sortOrder - 1]) {
+      setStatusMessage(new TimelineSlotOccupiedError().message);
+      reloadSmallImages();
+      return;
+    }
     pendingUploadRef.current = { kind: "small", month, sortOrder };
     fileInputRef.current?.click();
   }
@@ -96,6 +122,16 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
       return;
     }
 
+    if (isUploadInFlightRef.current) return;
+    isUploadInFlightRef.current = true;
+    try {
+      await runUpload(pending, file);
+    } finally {
+      isUploadInFlightRef.current = false;
+    }
+  }
+
+  async function runUpload(pending: PendingUpload, file: File) {
     if (pending.kind === "cover") {
       const { month } = pending;
       const existing = coverImages.get(month);
@@ -137,6 +173,8 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
       setStatusMessage("이미지가 등록되었습니다.");
     } catch (err) {
       setStatusMessage(toErrorMessage(err, "이미지를 등록하지 못했습니다."));
+      // 이미 사진이 있는 칸이었다면 화면이 DB와 어긋나 있던 것이므로 목록을 다시 맞춘다.
+      if (err instanceof TimelineSlotOccupiedError) reloadSmallImages();
     } finally {
       setUploadingSmallSlot(null);
     }
@@ -169,7 +207,8 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
 
   function handleDeleteImageFromModal(index: number) {
     if (!modal) return;
-    const row = (smallImages.get(modal.month) ?? [])[index - 1];
+    // 모달의 index 1부터는 TimelineMonth가 만든 것과 같은 기준(슬롯 순서로 보이는 작은 이미지)이다.
+    const row = getVisibleSmallImages(smallImages.get(modal.month) ?? [])[index - 1];
     if (!row) return;
     setConfirmDeleteSmallImage(row);
   }
@@ -228,6 +267,7 @@ export default function TimelineTrack({ months }: { months: TimelineMonthData[] 
               uploadingSmallSlot={
                 uploadingSmallSlot?.month === data.month ? uploadingSmallSlot.sortOrder : null
               }
+              isSmallSlotLocked={isTimelineBusy}
               onAddSmallPhoto={(sortOrder) => requestSmallPhoto(data.month, sortOrder)}
               onOpenImage={(images, index, alt) => setModal({ images, index, alt, month: data.month })}
             />

@@ -3,11 +3,9 @@
 import { motion } from "framer-motion";
 import type { TimelineMonthData, TimelineImageRow } from "@/lib/types";
 import { fadeUp } from "@/lib/motion";
-import { getTimelineImageUrl } from "@/lib/timelineImages";
+import { getSmallImageSlots, getTimelineImageUrl, getVisibleSmallImages } from "@/lib/timelineImages";
 import TimelineImage from "./TimelineImage";
 import { useSiteMode } from "@/context/SiteModeContext";
-
-const SMALL_IMAGE_SLOTS = 2;
 
 interface TimelineMonthProps {
   data: TimelineMonthData;
@@ -18,6 +16,8 @@ interface TimelineMonthProps {
   onDeleteCoverPhoto: () => void;
   smallImages: TimelineImageRow[];
   uploadingSmallSlot: number | null;
+  /** 다른 업로드/삭제가 진행 중이면 true - 빈 칸 버튼을 모두 막아 중복 요청을 막는다. */
+  isSmallSlotLocked: boolean;
   onAddSmallPhoto: (sortOrder: number) => void;
   onOpenImage: (images: string[], index: number, alt: string) => void;
 }
@@ -31,6 +31,7 @@ export default function TimelineMonth({
   onDeleteCoverPhoto,
   smallImages,
   uploadingSmallSlot,
+  isSmallSlotLocked,
   onAddSmallPhoto,
   onOpenImage,
 }: TimelineMonthProps) {
@@ -40,10 +41,11 @@ export default function TimelineMonth({
   const isRight = align === "right";
 
   const resolvedCover = coverImage ? getTimelineImageUrl(coverImage.image_path) : cover;
-  // 슬롯을 2개로 줄인 뒤에도 DB에 남아있을 수 있는 3번째 작은 이미지(과거 데이터)가
-  // 화면이나 모달 탐색에 끼어들지 않도록, 표시용으로는 항상 앞 2개까지만 사용한다.
-  // 데이터 자체는 지우지 않는다.
-  const visibleSmallImages = smallImages.slice(0, SMALL_IMAGE_SLOTS);
+  // 작은 이미지는 배열 순서가 아니라 DB의 sort_order로 칸을 정한다(1번 칸 = sort_order 1).
+  // DB에 남아있을 수 있는 3번째 슬롯(과거 데이터)은 화면/모달에 끼어들지 않는다 - 데이터는
+  // 지우지 않는다. 모달 순서와 모달 삭제 대상도 같은 getVisibleSmallImages 기준을 쓴다.
+  const smallImageSlots = getSmallImageSlots(smallImages);
+  const visibleSmallImages = getVisibleSmallImages(smallImages);
   const smallImageUrls = visibleSmallImages.map((img) => getTimelineImageUrl(img.image_path));
   const displayedImages = [resolvedCover, ...smallImageUrls];
 
@@ -149,18 +151,19 @@ export default function TimelineMonth({
           <p className="font-serif-kr max-w-md text-sm text-pink/90 italic">“{quote}”</p>
 
           <div className={`grid w-full max-w-md grid-cols-2 gap-3 ${isRight ? "" : "md:justify-items-end"}`}>
-            {Array.from({ length: SMALL_IMAGE_SLOTS }, (_, i) => {
+            {smallImageSlots.map((image, i) => {
               const sortOrder = i + 1;
-              const image = visibleSmallImages[i];
               const isUploading = uploadingSmallSlot === sortOrder;
 
               if (image) {
+                // 모달에서는 대표 이미지(0) 다음에 "보이는" 작은 이미지가 칸 순서대로 이어진다.
+                const modalIndex = visibleSmallImages.indexOf(image) + 1;
                 return (
                   <TimelineImage
                     key={image.id}
-                    src={smallImageUrls[i]}
+                    src={smallImageUrls[modalIndex - 1]}
                     alt={`${title} 작은 이미지 ${sortOrder}`}
-                    onClick={() => onOpenImage(displayedImages, i + 1, title)}
+                    onClick={() => onOpenImage(displayedImages, modalIndex, title)}
                     className="aspect-video w-full"
                     sizes="45vw"
                   />
@@ -172,7 +175,7 @@ export default function TimelineMonth({
                   key={`empty-${sortOrder}`}
                   type="button"
                   onClick={() => onAddSmallPhoto(sortOrder)}
-                  disabled={isUploading}
+                  disabled={isUploading || isSmallSlotLocked}
                   className="flex aspect-video w-full items-center justify-center bg-bg-soft text-[10px] tracking-[0.1em] text-text-soft/50 transition-colors hover:text-star disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isUploading ? "등록 중..." : "[ + 사진 추가 ]"}
